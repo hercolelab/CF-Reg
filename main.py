@@ -1,3 +1,4 @@
+import multiprocessing
 import torch
 from torch.utils.data import DataLoader
 import numpy as np
@@ -44,6 +45,10 @@ def is_counterfactual(cfg):
 @hydra.main(version_base="1.3", config_path="hydra_configs", config_name="config")
 def main(cfg: DictConfig) -> None:
     
+    
+    def run_sweep_agent(cfg: DictConfig, sweep_id: str):
+        wandb.agent(sweep_id=sweep_id, function=lambda: train(cfg))
+    
     def train():
         
         with wandb.init(project=cfg.logger.project, mode=cfg.logger.mode)  as run: 
@@ -89,7 +94,17 @@ def main(cfg: DictConfig) -> None:
 
         sweep_config = read_yaml(f'wandb_sweeps_configs/{cfg.logger.config}.yaml')
         sweep_id = wandb.sweep(sweep=sweep_config, project=cfg.logger.project)
-        wandb.agent(sweep_id=sweep_id, function=train)
+        
+        # Number of parallel agents
+        num_agents = cfg.num_agents if 'num_agents' in cfg else 4  # Default to 4 agents if not specified
+        processes = []
+        for _ in range(num_agents):
+            p = multiprocessing.Process(target=run_sweep_agent, args=(cfg, sweep_id))
+            p.start()
+            processes.append(p)
+        
+        for p in processes:
+            p.join()
         
     elif cfg.run_mode == "run":
         
