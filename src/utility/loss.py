@@ -2,7 +2,7 @@ from torch.nn import Module
 import torch
 from  src.losses.losses import CounterfactualRegularizationLoss, DynamicCounterfactualRegularizationLoss
 
-def get_loss(**kwargs) -> Module | function:
+def get_loss(**kwargs) -> Module:
     
     name: str = kwargs.pop("type")
     

@@ -23,7 +23,7 @@ if torch.cuda.is_available():
 
 
 class MLP(nn.Module):
-    def __init__(self, input_dim, hidden_layers, output_dim, dropout: float = 0.0):
+    def __init__(self, ):
         super(MLP, self).__init__()
         self.layers = nn.ModuleList()
         self.use_dropout = dropout > 0.0

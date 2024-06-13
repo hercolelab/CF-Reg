@@ -49,7 +49,7 @@ def main(cfg: DictConfig) -> None:
     def run_sweep_agent(cfg: DictConfig, sweep_id: str):
         wandb.agent(sweep_id=sweep_id, function=lambda: train(cfg))
     
-    def train():
+    def train(cfg):
         
         with wandb.init(project=cfg.logger.project, mode=cfg.logger.mode)  as run: 
 
@@ -96,7 +96,7 @@ def main(cfg: DictConfig) -> None:
         sweep_id = wandb.sweep(sweep=sweep_config, project=cfg.logger.project)
         
         # Number of parallel agents
-        num_agents = cfg.num_agents if 'num_agents' in cfg else 4  # Default to 4 agents if not specified
+        num_agents = cfg.num_agents if 'num_agents' in cfg else 2  # Default to 4 agents if not specified
         processes = []
         for _ in range(num_agents):
             p = multiprocessing.Process(target=run_sweep_agent, args=(cfg, sweep_id))
