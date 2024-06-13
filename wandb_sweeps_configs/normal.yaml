@@ -1,5 +1,6 @@
+program: main.py
 method: bayes
-name: counterfactual_overfitting
+name: TEST_MULTIPLE_AGENTS
 metric:
   goal: maximize
   name: validation/accuracy

@@ -41,15 +41,11 @@ def is_counterfactual(cfg):
     
     return True if cfg.loss.type != "normal" else False
 
-
-@hydra.main(version_base="1.3", config_path="hydra_configs", config_name="config")
-def main(cfg: DictConfig) -> None:
+def run_sweep_agent(cfg: DictConfig, sweep_id: str):
+    wandb.agent(sweep_id=sweep_id, function=lambda: train(cfg))
     
     
-    def run_sweep_agent(cfg: DictConfig, sweep_id: str):
-        wandb.agent(sweep_id=sweep_id, function=lambda: train(cfg))
-    
-    def train(cfg):
+def train(cfg):
         
         with wandb.init(project=cfg.logger.project, mode=cfg.logger.mode)  as run: 
 
@@ -88,6 +84,9 @@ def main(cfg: DictConfig) -> None:
             wandb_logger.watch(model, log='gradients', log_freq=100)
             trainer = pl.Trainer(**cfg.trainer, logger=wandb_logger)
             trainer.fit(clf, train_loader, test_loader)
+
+@hydra.main(version_base="1.3", config_path="hydra_configs", config_name="config")
+def main(cfg: DictConfig) -> None:
     
     
     if cfg.run_mode == 'sweep':
@@ -95,8 +94,10 @@ def main(cfg: DictConfig) -> None:
         sweep_config = read_yaml(f'wandb_sweeps_configs/{cfg.logger.config}.yaml')
         sweep_id = wandb.sweep(sweep=sweep_config, project=cfg.logger.project)
         
+        multiprocessing.set_start_method('spawn', force=True)
+
         # Number of parallel agents
-        num_agents = cfg.num_agents if 'num_agents' in cfg else 2  # Default to 4 agents if not specified
+        num_agents = cfg.num_agents if 'num_agents' in cfg else 4 # Default to 4 agents if not specified
         processes = []
         for _ in range(num_agents):
             p = multiprocessing.Process(target=run_sweep_agent, args=(cfg, sweep_id))
