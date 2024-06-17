@@ -109,7 +109,7 @@ def main(cfg: DictConfig) -> None:
         
     elif cfg.run_mode == "run":
         
-        train()
+        train(cfg)
         
     else:
         

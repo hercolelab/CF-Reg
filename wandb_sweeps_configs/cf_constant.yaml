@@ -4,13 +4,12 @@ metric:
   goal: maximize
   name: validation/accuracy
 parameters:
-  alpha:
-    min: 0.001
-    max: 0.9
   radius:
-    min: 0.001
-    max: 1.5
+    values: [2, 1.5, 1.0, 0.1, 0.01]
   n_samples:
-    min: 50
-    max: 500
+    values: [10, 100, 1000]
+  distribution:
+    values: ["uniform", "normal"]
+  alpha:
+    values: [0.1, 0.2, 0.5, 0.8, 0.9]
   

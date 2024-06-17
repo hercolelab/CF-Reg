@@ -45,22 +45,19 @@ def get_dataset(name: str, processing: str = "norm") -> Tuple[TensorDataset, Ten
         from torchvision import datasets
         from torchvision import transforms
         
-        training_data =   datasets.MNIST("data", train=True, download=True,
-                             transform= transforms.Compose([
-                               transforms.ToTensor(),
-                               transforms.Normalize(
-                                 (0.1307,), (0.3081,))
-                             ]))
+        training_data =   datasets.MNIST("data", train=True, download=True)
 
-        test_data = datasets.MNIST('data', train=False, download=True,
-                             transform= transforms.Compose([
-                               transforms.ToTensor(),
-                               transforms.Normalize(
-                                 (0.1307,), (0.3081,))
-                             ]))
+        test_data = datasets.MNIST('data', train=False, download=True)
         
-        train_set = TensorDataset(training_data.data.type(torch.float).unsqueeze(1), training_data.targets)
-        test_set = TensorDataset(test_data.data.type(torch.float).unsqueeze(1), test_data.targets)
+        raw_train_data = training_data.data.type(torch.float).unsqueeze(1)
+        raw_test_data = test_data.data.type(torch.float).unsqueeze(1)
+        
+        train_normalized = (raw_train_data - 0) / (255)
+        test_normalized = (raw_test_data - 0) / (255)
+
+                
+        train_set = TensorDataset(train_normalized, training_data.targets)
+        test_set = TensorDataset(test_normalized, test_data.targets)
 
         return train_set, test_set
     
@@ -69,19 +66,9 @@ def get_dataset(name: str, processing: str = "norm") -> Tuple[TensorDataset, Ten
         from torchvision import datasets
         from torchvision import transforms
         
-        training_data =   datasets.FashionMNIST("data", train=True, download=True,
-                             transform= transforms.Compose([
-                               transforms.ToTensor(),
-                               transforms.Normalize(
-                                 (0.1307,), (0.3081,))
-                             ]))
+        training_data =   datasets.FashionMNIST("data", train=True, download=True)
 
-        test_data = datasets.FashionMNIST('data', train=False, download=True,
-                             transform= transforms.Compose([
-                               transforms.ToTensor(),
-                               transforms.Normalize(
-                                 (0.1307,), (0.3081,))
-                             ]))
+        test_data = datasets.FashionMNIST('data', train=False, download=True)
         
         train_set = TensorDataset(training_data.data.type(torch.float).unsqueeze(1), training_data.targets)
         test_set = TensorDataset(test_data.data.type(torch.float).unsqueeze(1), test_data.targets)
@@ -106,7 +93,12 @@ def get_dataset(name: str, processing: str = "norm") -> Tuple[TensorDataset, Ten
     else:
         raise ValueError(f"Dataset {name} is not available!")
             
+class UnsqueezeTransform:
+    def __init__(self, dim):
+        self.dim = dim
     
+    def __call__(self, img: torch.Tensor) -> torch.Tensor:
+        return img.unsqueeze(self.dim) 
     
 if __name__ == "__main__":
     
