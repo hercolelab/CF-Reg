@@ -26,10 +26,12 @@ class LightningClassifier(L.LightningModule):
         self.train_target = []
         self.train_loss = []
         self.train_p_x = []
+        self.train_e_z = []
         self.val_output = []
         self.val_target = []
         self.val_loss = []
         self.val_p_x = []
+        self.val_e_z = []
         self.train_embeddings = []
         self.test_embeddings = []
         self.evaluator = evaluator
@@ -52,6 +54,7 @@ class LightningClassifier(L.LightningModule):
         self.train_target = []
         self.train_loss = []
         self.train_p_x = []
+        self.train_e_z = []
     
     def on_train_epoch_end(self) -> None:
         
@@ -64,16 +67,19 @@ class LightningClassifier(L.LightningModule):
                        f"{stage}/f1-score": f1, 
                        f"{stage}/precision": precision, 
                        f"{stage}/recall": recall,
+                       f"{stage}/E_z": sum(self.train_e_z),
                        f"{stage}/p_x": sum(self.train_p_x)/len(self.train_p_x)}, on_epoch=True, on_step=False)  
         
         
     def training_step(self, batch: torch.Tensor, batch_idx: int) -> torch.Tensor:
         
         data, target = batch
-        output = self.model(data)
+        target = target.unsqueeze(1).repeat(1, 10).view(-1)
+        output = self.model(data, True)
         values: dict = {"input": output, "target": target}
-        out, target_cf = self.estimator.get_counterfactual(data, output, grad=self.counterfactual)
-        p_x = self.estimator.counterfactual_probability(out=out, target=target_cf)
+        #out, target_cf = self.estimator.get_counterfactual(data=data, target=output, grad=self.counterfactual)
+        out, target_cf = self.estimator.get_counterfactual(data=data, target=self.model(data, False), grad=False)
+        p_x, e_z = self.estimator.counterfactual_probability(out=out, target=target_cf)
         if self.counterfactual:
             values = values | { "out_cf": out, "target_cf": target_cf}
             
@@ -82,8 +88,9 @@ class LightningClassifier(L.LightningModule):
         self.train_target += target.tolist()
         self.train_output += output.tolist()
         self.train_loss += [loss.item()]
-        self.train_p_x +=[p_x.item()]
-        
+        self.train_p_x += p_x.tolist()
+        self.train_e_z += [e_z.item()]
+                
         if self.show_embedding:
             from sklearn.decomposition import PCA
             import matplotlib.pyplot as plt
@@ -104,6 +111,7 @@ class LightningClassifier(L.LightningModule):
         self.val_target = []
         self.val_loss = []
         self.val_p_x = []
+        self.val_e_z = []
     
     def on_validation_epoch_end(self) -> None:
         
@@ -118,15 +126,19 @@ class LightningClassifier(L.LightningModule):
                         f"{stage}/f1-score": f1, 
                         f"{stage}/precision": precision, 
                         f"{stage}/recall": recall,
+                        f"{stage}/E_z": sum(self.val_e_z),
                         f"{stage}/p_x": sum(self.val_p_x)/len(self.val_p_x)}, on_epoch=True, on_step=False) 
 
     def validation_step(self, batch, batch_idx):
         
         data, target = batch
-        output = self.model(data)
+        target = target.unsqueeze(1).repeat(1, 10).view(-1)
+
+        output = self.model(data, True)
         values: dict = {"input": output, "target": target}
-        out, target_cf = self.estimator.get_counterfactual(data, output, grad=False)
-        p_x = self.estimator.counterfactual_probability(out=out, target=target_cf)
+        #out, target_cf = self.estimator.get_counterfactual(data, output, grad=False)
+        out, target_cf = self.estimator.get_counterfactual(data=data, target=self.model(data, False), grad=False)
+        p_x, e_z = self.estimator.counterfactual_probability(out=out, target=target_cf)
         if self.counterfactual:
             values = values | { "out_cf": out, "target_cf": target_cf}        
 
@@ -134,6 +146,6 @@ class LightningClassifier(L.LightningModule):
         self.val_target += target.tolist()
         self.val_output += output.tolist()
         self.val_loss += [val_loss.item()]   
-        self.val_p_x +=[p_x.item()]
-        
+        self.val_p_x += p_x.tolist()
+        self.val_e_z += [e_z.item()]
         return val_loss

@@ -88,7 +88,31 @@ def get_dataset(name: str, processing: str = "norm") -> Tuple[TensorDataset, Ten
         test_set = TensorDataset(torch.from_numpy(test_data.data).type(torch.float16).permute(0,3,1,2), torch.Tensor(test_data.targets).type(torch.uint8))
 
         return train_set, test_set
+    
+    elif name == "air_quality":
         
+        try:
+            df=pd.read_csv('data/air_quality.csv')
+            
+        except Exception:
+            
+            raise ValueError(f"Air Quality dataset is not inside the data folder! cwd {os.getcwd()}")
+        
+        
+        X = df.drop('HealthImpactClass',axis=1).values
+        y = df['HealthImpactClass'].values
+
+        X_train, X_test, y_train, y_test = train_test_split(X, y, test_size=0.3, random_state=seed)
+
+        scaler.fit(X_train)
+        
+        X_train = scaler.transform(X_train)
+        X_test = scaler.transform(X_test)
+        
+        train_set = TensorDataset(torch.tensor(X_train, dtype=dtype), torch.tensor(y_train,dtype=torch.long))
+        test_set = TensorDataset(torch.tensor(X_test, dtype=dtype), torch.tensor(y_test, dtype=torch.long))
+        
+        return train_set, test_set
         
     else:
         raise ValueError(f"Dataset {name} is not available!")

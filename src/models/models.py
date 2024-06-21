@@ -27,9 +27,11 @@ class MLP(nn.Module):
         super(MLP, self).__init__()
         self.layers = nn.ModuleList()
         self.use_dropout = kwargs["dropout"] > 0.0
-        
+        self.use_noise_injection = True
         # Create the first layer from the input dimension to the first hidden layer size
         current_dim = kwargs["input_dim"]
+        self.noise_module = NoiseModule(shape=(kwargs["hidden_layers"][-1],))
+
         for hidden_dim in kwargs["hidden_layers"]:
             self.layers.append(nn.Linear(current_dim, hidden_dim))
             if self.use_dropout:
@@ -38,14 +40,17 @@ class MLP(nn.Module):
         
         # Output layer
         self.layers.append(nn.Linear(current_dim, kwargs["nclasses"]))
-        
-    def forward(self, x: torch.Tensor):
+    
+     
+    def forward(self, x: torch.Tensor, use_noise_injection: bool = True):
         # Apply a ReLU activation function and dropout (if used) to each hidden layer
         for layer in self.layers[:-1]:
             x = layer(x)
             if isinstance(layer, nn.Linear):
                 x = F.relu(x)
         # No activation function for the output layer (assuming classification task)
+        if use_noise_injection:
+            x=self.noise_module(x)
         x = self.layers[-1](x)
         return x
     
@@ -67,10 +72,10 @@ class CNN(nn.Module):
             self.layers.append(nn.Conv2d(in_channels=current_channel, out_channels=channels, kernel_size=kernel))
             self.shapes.append(self.output_shape(edge=dimension_input, kernel_size=kernel))
             dimension_input = self.shapes[-1]
-            self.layers.append(nn.MaxPool2d(kernel_size=2))
-            self.shapes.append(self.output_shape(edge=dimension_input, kernel_size=2, stride=2))
+            # self.layers.append(nn.MaxPool2d(kernel_size=2))
+            # self.shapes.append(self.output_shape(edge=dimension_input, kernel_size=2, stride=2))
             current_channel = channels
-            dimension_input = self.shapes[-1]
+            #dimension_input = self.shapes[-1]
             
         self.layers.append(nn.Linear(channel_list[-1]*self.shapes[-1]*self.shapes[-1], classes))
 
@@ -111,19 +116,22 @@ class NoiseModule(nn.Module):
         self.__perturbation = self.__random_function(num_points=n_samples, shape=shape, radius=radius)
         self.__n_samples = n_samples
         self.__shape = shape
+        self.__device = "cuda" if torch.cuda.is_available() else "cpu"
         
-    def forward(self, x: Tensor):
+    def forward(self, data: Tensor):
         
-        batch_size: int = x.shape[0]
+        batch_size: int = data.shape[0]
         unit_dims: Tuple[int, ...] = (1, ) 
         new_shape: Tuple[int, ...] = (self.__n_samples, *unit_dims, *self.__shape)
         perturbation: Tensor = self.__perturbation.view(new_shape)
         repeat_dims: Tuple[int, ...] = (1, batch_size, *((1, )*len(new_shape[2:])))
         perturbation: Tensor = perturbation.repeat(repeat_dims)       
-        data: Tensor = data.to(device=self.device) 
-        sample_perturbed: Tensor = x + perturbation 
+        data: Tensor = data.to(device=self.__device) 
+        sample_perturbed: Tensor = data + perturbation 
         batch_dims: Tuple[int, ...] = (-1, *new_shape[2:])
         sample_perturbed: Tensor = sample_perturbed.reshape(batch_dims)
+        #out: Tensor = self.function(sample_perturbed)
         
         return sample_perturbed
+        
         

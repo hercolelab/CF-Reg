@@ -2,16 +2,16 @@ defaults:
   - _self_
   - loader: loader
   - loss: normal
-  - model: cnn
+  - model: mlp
   - logger: wandb
-  - data: mnist
+  - data: water
   - trainer: trainer_default
   - optimizer: adam
   - estimator: montecarlo
 
 run_mode: run #sweep
 project: counterfactual_overfitting_experiments_new
-name: experiments
+name: test_e_z
 version: 1
 seed: 42
 device: cuda

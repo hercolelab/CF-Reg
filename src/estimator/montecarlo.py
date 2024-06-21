@@ -82,7 +82,7 @@ class MontecarloEstimator:
         sample_perturbed: Tensor = data + perturbation 
         batch_dims: Tuple[int, ...] = (-1, *new_shape[2:])
         sample_perturbed: Tensor = sample_perturbed.reshape(batch_dims)
-        out: Tensor = self.function(sample_perturbed)
+        out: Tensor = self.function(sample_perturbed, False)
         target: Tensor = torch.argmax(target, dim=-1)
         target: Tensor = target.unsqueeze(1)
         target: Tensor = target.repeat(1, self.n_samples)
@@ -91,10 +91,16 @@ class MontecarloEstimator:
         
         return out, target
     
-    def counterfactual_probability(self, out: Tensor, target: Tensor) -> Tensor:
+    def counterfactual_probability(self, out: Tensor, target: Tensor) -> Tuple[Tensor, Tensor]:
+        """
         
-        predicted_class_cf = torch.argmax(out, dim=1)
-        cf_fraction = (target != predicted_class_cf).sum() / torch.numel(predicted_class_cf)
+        """
         
-        return cf_fraction
-      
+        predicted_class_cf: Tensor = torch.argmax(out, dim=1)
+        target_reshaped: Tensor = target.view(self.n_samples, -1)
+        predicted_class_cf_reshaped: Tensor = predicted_class_cf.view(self.n_samples, -1)
+        p_x: Tensor = torch.sum(target_reshaped != predicted_class_cf_reshaped, dim=0) / self.n_samples
+        e_z: Tensor = torch.sum(p_x)
+        
+        return p_x, e_z
+    

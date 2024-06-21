@@ -1,12 +1,12 @@
 program: main.py
 method: grid
-name: MNIST_Valutazione_p_x:raggio_distribuzione_samples
+name: WATER_Valutazione_p_x:raggio_distribuzione_samples
 metric:
   goal: maximize
   name: validation/accuracy
 parameters:
   radius:
-    values: [2, 1.5, 1.0, 0.1, 0.01, 0.001]
+    values: [0]
   n_samples:
     values: [10, 100, 1000]
   distribution:
