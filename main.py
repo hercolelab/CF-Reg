@@ -66,7 +66,7 @@ def train(cfg):
                 torch.backends.cudnn.benchmark = False
 
             trainset, testset = get_dataset(name=cfg.data.name) 
-            model = get_model(config=OmegaConf.to_container(cfg.model) | {"input_dim": cfg.data.input_dim, "nclasses": cfg.data.nclasses, "channel_in": cfg.data.channel_in})
+            model = get_model(config=OmegaConf.to_container(cfg.model) | {"input_dim": cfg.data.input_dim, "nclasses": cfg.data.nclasses, "channel_in": cfg.data.channel_in, "n_samples": cfg.estimator.n_samples, "radius": cfg.estimator.radius})
             criterion = get_loss(**cfg.loss)
             estimator = MontecarloEstimator(function=model, train_set=trainset, **cfg.estimator)
             evaluator = ClassifierEvaluator(classes=cfg.data.nclasses)

@@ -74,7 +74,7 @@ class LightningClassifier(L.LightningModule):
     def training_step(self, batch: torch.Tensor, batch_idx: int) -> torch.Tensor:
         
         data, target = batch
-        target = target.unsqueeze(1).repeat(1, 10).view(-1)
+        target = target.unsqueeze(1).repeat(1, self.estimator.n_samples).view(-1)
         output = self.model(data, True)
         values: dict = {"input": output, "target": target}
         #out, target_cf = self.estimator.get_counterfactual(data=data, target=output, grad=self.counterfactual)
@@ -132,7 +132,7 @@ class LightningClassifier(L.LightningModule):
     def validation_step(self, batch, batch_idx):
         
         data, target = batch
-        target = target.unsqueeze(1).repeat(1, 10).view(-1)
+        target = target.unsqueeze(1).repeat(1, self.estimator.n_samples).view(-1)
 
         output = self.model(data, True)
         values: dict = {"input": output, "target": target}

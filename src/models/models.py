@@ -30,7 +30,7 @@ class MLP(nn.Module):
         self.use_noise_injection = True
         # Create the first layer from the input dimension to the first hidden layer size
         current_dim = kwargs["input_dim"]
-        self.noise_module = NoiseModule(shape=(kwargs["hidden_layers"][-1],))
+        self.noise_module = NoiseModule(shape=(kwargs["hidden_layers"][-1],), n_samples=kwargs["n_samples"], radius=kwargs["radius"])
 
         for hidden_dim in kwargs["hidden_layers"]:
             self.layers.append(nn.Linear(current_dim, hidden_dim))
