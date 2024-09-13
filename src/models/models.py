@@ -5,16 +5,8 @@ from typing import *
 from src.utility.geometric import Sphere
 seed = 42
 
-
-
-
-
 torch.manual_seed(seed)
 
-# Additional steps to enforce determinism
-# Note: These settings can degrade performance and may not guarantee complete reproducibility across different PyTorch releases or different platforms like CPUs and GPUs.
-
-# Ensuring that all operations are deterministic on GPU (if using CUDA)
 if torch.cuda.is_available():
     torch.cuda.manual_seed(seed)
     torch.cuda.manual_seed_all(seed)  # for multi-GPU.
@@ -23,11 +15,12 @@ if torch.cuda.is_available():
 
 
 class MLP(nn.Module):
+    
     def __init__(self, **kwargs):
+        
         super(MLP, self).__init__()
         self.layers = nn.ModuleList()
         self.use_dropout = kwargs["dropout"] > 0.0
-        self.use_noise_injection = True
         # Create the first layer from the input dimension to the first hidden layer size
         current_dim = kwargs["input_dim"]
         self.noise_module = NoiseModule(shape=(kwargs["hidden_layers"][-1],), n_samples=kwargs["n_samples"], radius=kwargs["radius"])
@@ -104,7 +97,7 @@ class NoiseModule(nn.Module):
     
     def __init__(self, 
                  shape: Tuple[int, ...],
-                 distribution: str = "normal", 
+                 distribution: str = "uniform", 
                  n_samples: int = 10, 
                  radius: float = 1.0,
                  *args, **kwargs) -> None:
@@ -132,6 +125,6 @@ class NoiseModule(nn.Module):
         sample_perturbed: Tensor = sample_perturbed.reshape(batch_dims)
         #out: Tensor = self.function(sample_perturbed)
         
-        return sample_perturbed
+        return torch.cat((sample_perturbed, data))
         
         

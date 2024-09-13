@@ -1,5 +1,5 @@
 name: adam
 lr: 0.01
 weight_decay: 0.0
-
+pnoise: 9
 

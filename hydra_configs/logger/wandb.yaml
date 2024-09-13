@@ -2,4 +2,4 @@
 name: ${name}
 project: ${project}
 mode: offline
-config: normal
+config: cf_con_grid

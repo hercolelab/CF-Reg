@@ -20,6 +20,7 @@ class LightningClassifier(L.LightningModule):
         super().__init__()
 
         self.model = model
+        self.pnoise = optim_config.pop("pnoise")
         self.optim_config = optim_config
         self.criterion = criterion
         self.train_output = []
@@ -72,10 +73,18 @@ class LightningClassifier(L.LightningModule):
         
         
     def training_step(self, batch: torch.Tensor, batch_idx: int) -> torch.Tensor:
+                
+        use_noise = torch.rand(1).item() < self.pnoise
         
         data, target = batch
-        target = target.unsqueeze(1).repeat(1, self.estimator.n_samples).view(-1)
-        output = self.model(data, True)
+        
+        if use_noise:
+            
+            target = torch.cat((target.unsqueeze(1).repeat(1, self.estimator.n_samples).view(-1), target))
+
+        # TODO: controlla come viene calcolata l'accuracy
+            
+        output = self.model(data, use_noise)
         values: dict = {"input": output, "target": target}
         #out, target_cf = self.estimator.get_counterfactual(data=data, target=output, grad=self.counterfactual)
         out, target_cf = self.estimator.get_counterfactual(data=data, target=self.model(data, False), grad=False)
@@ -85,24 +94,12 @@ class LightningClassifier(L.LightningModule):
             
         torch.set_grad_enabled(mode=True)
         loss = self.criterion(**values)        
-        self.train_target += target.tolist()
-        self.train_output += output.tolist()
+        self.train_target += target[-data.shape[0]:].tolist()
+        self.train_output += output[-data.shape[0]:].tolist()
         self.train_loss += [loss.item()]
         self.train_p_x += p_x.tolist()
         self.train_e_z += [e_z.item()]
                 
-        if self.show_embedding:
-            from sklearn.decomposition import PCA
-            import matplotlib.pyplot as plt
-            from mpl_toolkits.mplot3d import Axes3D
-            
-            fig = plt.figure(figsize=(10, 7))
-            ax = fig.add_subplot(111, projection='3d')
-            pca: PCA = PCA(n_components=3)
-            pca_components = pca.fit_transform(self.model.layers[-2].embeddings.detach().cpu().numpy())
-            ax.scatter(pca_components[:100, 0], pca_components[:100, 1], pca_components[:100, 2], c=torch.argmax(out[:100], dim=1).detach().cpu().numpy())
-            plt.savefig(f"imgs/pca_{self.current_epoch}_{batch_idx}.png")
-            plt.close()
         return loss
     
     def on_validation_epoch_start(self) -> None:
@@ -131,10 +128,15 @@ class LightningClassifier(L.LightningModule):
 
     def validation_step(self, batch, batch_idx):
         
+        use_noise = torch.rand(1).item() < self.pnoise
+        
         data, target = batch
-        target = target.unsqueeze(1).repeat(1, self.estimator.n_samples).view(-1)
+        
+        if use_noise:
+            
+            target = torch.cat((target.unsqueeze(1).repeat(1, self.estimator.n_samples).view(-1), target))
 
-        output = self.model(data, True)
+        output = self.model(data, use_noise)
         values: dict = {"input": output, "target": target}
         #out, target_cf = self.estimator.get_counterfactual(data, output, grad=False)
         out, target_cf = self.estimator.get_counterfactual(data=data, target=self.model(data, False), grad=False)
@@ -143,8 +145,8 @@ class LightningClassifier(L.LightningModule):
             values = values | { "out_cf": out, "target_cf": target_cf}        
 
         val_loss = self.criterion(**values)   
-        self.val_target += target.tolist()
-        self.val_output += output.tolist()
+        self.val_target += target[-data.shape[0]:].tolist()
+        self.val_output += output[-data.shape[0]:].tolist()
         self.val_loss += [val_loss.item()]   
         self.val_p_x += p_x.tolist()
         self.val_e_z += [e_z.item()]
