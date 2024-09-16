@@ -39,6 +39,7 @@ class LightningClassifier(L.LightningModule):
         self.estimator = estimator
         self.counterfactual = counterfactual
         self.show_embedding = False
+        self.noise_switch = False
         
         if self.show_embedding:
             self.model.layers[-2].register_forward_hook(extract_embeddings_hook)
@@ -78,13 +79,13 @@ class LightningClassifier(L.LightningModule):
         
         data, target = batch
         
-        if use_noise:
+        if use_noise and self.noise_switch:
             
             target = torch.cat((target.unsqueeze(1).repeat(1, self.estimator.n_samples).view(-1), target))
 
         # TODO: controlla come viene calcolata l'accuracy
             
-        output = self.model(data, use_noise)
+        output = self.model(data, (use_noise and self.noise_switch))
         values: dict = {"input": output, "target": target}
         #out, target_cf = self.estimator.get_counterfactual(data=data, target=output, grad=self.counterfactual)
         out, target_cf = self.estimator.get_counterfactual(data=data, target=self.model(data, False), grad=False)
@@ -132,11 +133,11 @@ class LightningClassifier(L.LightningModule):
         
         data, target = batch
         
-        if use_noise:
+        if use_noise and self.noise_switch:
             
             target = torch.cat((target.unsqueeze(1).repeat(1, self.estimator.n_samples).view(-1), target))
 
-        output = self.model(data, use_noise)
+        output = self.model(data, (use_noise and self.noise_switch))
         values: dict = {"input": output, "target": target}
         #out, target_cf = self.estimator.get_counterfactual(data, output, grad=False)
         out, target_cf = self.estimator.get_counterfactual(data=data, target=self.model(data, False), grad=False)
