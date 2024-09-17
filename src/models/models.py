@@ -73,7 +73,7 @@ class CNN(nn.Module):
         self.layers.append(nn.Linear(channel_list[-1]*self.shapes[-1]*self.shapes[-1], classes))
 
 
-    def forward(self, x: torch.Tensor):
+    def forward(self, x: torch.Tensor, any: Any):
         
         for layer in self.layers[:-1]:
             x = layer(x)

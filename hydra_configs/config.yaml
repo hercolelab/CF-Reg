@@ -2,7 +2,7 @@ defaults:
   - _self_
   - loader: loader
   - loss: normal
-  - model: mlp
+  - model: cnn
   - logger: wandb
   - data: water
   - trainer: trainer_default

@@ -82,7 +82,7 @@ def train(cfg):
             test_loader = DataLoader(testset, **cfg.loader)
             
             wandb_logger.watch(model, log='gradients', log_freq=100)
-            trainer = pl.Trainer(**cfg.trainer, logger=wandb_logger)
+            trainer = pl.Trainer(**cfg.trainer, logger=wandb_logger, precision=16)
             trainer.fit(clf, train_loader, test_loader)
 
 @hydra.main(version_base="1.3", config_path="hydra_configs", config_name="config")
