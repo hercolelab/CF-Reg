@@ -55,7 +55,7 @@ def extract_embeddings_hook(module, input, output):
     
 class CNN(nn.Module):
     
-    def __init__(self, dimension_input: int, classes: int, channel_input: int, channel_list: list[int], kernel_list: list[int]):
+    def __init__(self, dimension_input: int, classes: int, channel_input: int, channel_list: list[int], kernel_list: list[int], **kwargs):
         super(CNN, self).__init__()
         self.shapes: list[int] = []
         self.layers: nn.ModuleList = nn.ModuleList()
@@ -65,15 +65,15 @@ class CNN(nn.Module):
             self.layers.append(nn.Conv2d(in_channels=current_channel, out_channels=channels, kernel_size=kernel))
             self.shapes.append(self.output_shape(edge=dimension_input, kernel_size=kernel))
             dimension_input = self.shapes[-1]
-            # self.layers.append(nn.MaxPool2d(kernel_size=2))
-            # self.shapes.append(self.output_shape(edge=dimension_input, kernel_size=2, stride=2))
+            self.layers.append(nn.MaxPool2d(kernel_size=2))
+            self.shapes.append(self.output_shape(edge=dimension_input, kernel_size=2, stride=2))
             current_channel = channels
-            #dimension_input = self.shapes[-1]
-            
+            dimension_input = self.shapes[-1]
+        self.noise_module = NoiseModule(shape=(channel_list[-1]*self.shapes[-1]*self.shapes[-1],), n_samples=kwargs["n_samples"], radius=kwargs["radius"])
         self.layers.append(nn.Linear(channel_list[-1]*self.shapes[-1]*self.shapes[-1], classes))
 
 
-    def forward(self, x: torch.Tensor, any: Any):
+    def forward(self, x: torch.Tensor, use_noise_injection: bool):
         
         for layer in self.layers[:-1]:
             x = layer(x)
@@ -82,6 +82,8 @@ class CNN(nn.Module):
                 x = F.relu(x)
                 
         x = torch.flatten(x, start_dim=1)
+        if use_noise_injection:
+            x = self.noise_module(x)
         x = self.layers[-1](x)
         return F.log_softmax(x, dim=-1)
     

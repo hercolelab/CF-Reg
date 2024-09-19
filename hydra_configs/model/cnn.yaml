@@ -1,3 +1,3 @@
 model_type: CNN
-channel_list: [5, 10, 20]
-kernel_list: [3, 3, 3]
+channel_list: [5]
+kernel_list: [3]

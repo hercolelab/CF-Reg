@@ -24,7 +24,9 @@ def get_model(**kwargs) -> torch.nn.Module:
                     classes=config["nclasses"], 
                     channel_input=config["channel_in"], 
                     channel_list=config["channel_list"], 
-                    kernel_list=config["kernel_list"])
+                    kernel_list=config["kernel_list"],
+                    n_samples=config["n_samples"],
+                    radius=config["radius"])
         
         return model.to(device)
     

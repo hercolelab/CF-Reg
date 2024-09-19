@@ -39,7 +39,7 @@ class LightningClassifier(L.LightningModule):
         self.estimator = estimator
         self.counterfactual = counterfactual
         self.show_embedding = False
-        self.noise_switch = False
+        self.noise_switch = True
         
         if self.show_embedding:
             self.model.layers[-2].register_forward_hook(extract_embeddings_hook)
@@ -75,17 +75,15 @@ class LightningClassifier(L.LightningModule):
         
     def training_step(self, batch: torch.Tensor, batch_idx: int) -> torch.Tensor:
                 
-        use_noise = torch.rand(1).item() < self.pnoise
-        
         data, target = batch
+        use_noise: bool = torch.rand(1).item() < self.pnoise
+        noise_control_condition: bool = use_noise and self.noise_switch
         
         if use_noise and self.noise_switch:
             
             target = torch.cat((target.unsqueeze(1).repeat(1, self.estimator.n_samples).view(-1), target))
 
-        # TODO: controlla come viene calcolata l'accuracy
-            
-        output = self.model(data, (use_noise and self.noise_switch))
+        output = self.model(data, noise_control_condition)
         values: dict = {"input": output, "target": target}
         #out, target_cf = self.estimator.get_counterfactual(data=data, target=output, grad=self.counterfactual)
         out, target_cf = self.estimator.get_counterfactual(data=data, target=self.model(data, False), grad=False)
@@ -113,9 +111,11 @@ class LightningClassifier(L.LightningModule):
     
     def on_validation_epoch_end(self) -> None:
         
+        stage: str = "validation" 
+        
         if self.trainer.state.stage != "sanity_check":
             
-            stage: str = "validation"
+            
             accuracy, f1, precision, recall = self.evaluator.get_complete_evaluation(self.val_output, self.val_target)
             
             self.log_dict({f"{stage}/loss": sum(self.val_loss)/len(self.val_loss), 
@@ -129,15 +129,15 @@ class LightningClassifier(L.LightningModule):
 
     def validation_step(self, batch, batch_idx):
         
-        use_noise = torch.rand(1).item() < self.pnoise
-        
         data, target = batch
+        use_noise: bool = torch.rand(1).item() < self.pnoise
+        noise_control_condition: bool = use_noise and self.noise_switch
         
         if use_noise and self.noise_switch:
             
             target = torch.cat((target.unsqueeze(1).repeat(1, self.estimator.n_samples).view(-1), target))
 
-        output = self.model(data, (use_noise and self.noise_switch))
+        output = self.model(data, noise_control_condition)
         values: dict = {"input": output, "target": target}
         #out, target_cf = self.estimator.get_counterfactual(data, output, grad=False)
         out, target_cf = self.estimator.get_counterfactual(data=data, target=self.model(data, False), grad=False)
@@ -151,4 +151,5 @@ class LightningClassifier(L.LightningModule):
         self.val_loss += [val_loss.item()]   
         self.val_p_x += p_x.tolist()
         self.val_e_z += [e_z.item()]
+        
         return val_loss
