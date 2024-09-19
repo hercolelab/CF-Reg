@@ -71,7 +71,6 @@ class MontecarloEstimator:
         - out (Tensor): The output tensor from the model after perturbation, reshaped as required.
         - target (Tensor): The repeated and reshaped target tensor to match the perturbation structure.
         """
-        torch.set_grad_enabled(mode=grad)
         batch_size: int = data.shape[0]
         unit_dims: Tuple[int, ...] = (1, ) 
         new_shape: Tuple[int, ...] = (self.n_samples, *unit_dims, *self.shape)
@@ -82,6 +81,7 @@ class MontecarloEstimator:
         sample_perturbed: Tensor = data + perturbation 
         batch_dims: Tuple[int, ...] = (-1, *new_shape[2:])
         sample_perturbed: Tensor = sample_perturbed.reshape(batch_dims)
+        self.function.eval()
         out: Tensor = self.function(sample_perturbed, False)
         target: Tensor = torch.argmax(target, dim=-1)
         target: Tensor = target.unsqueeze(1)

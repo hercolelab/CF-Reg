@@ -5,10 +5,8 @@ metric:
   name: validation/accuracy
 parameters:
   radius:
-    values: [2, 1.5, 1.0, 0.1, 0.01, 0.001, 0.0001, 0.00001]
+    values: [1.5, 1.0, 0.1, 0.01, 0.001, 0.0001, 0.00001]
   n_samples:
-    min: 10
-    max: 1000
+    values: [10, 100, 1000]
   pnoise:
-    min: 0.01
-    max: 0.99
+    values: [0.01, 0.1, 0.2, 0.3, 0.4, 0.5, 0.6, 0.7, 0.8, 0.9]

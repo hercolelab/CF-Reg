@@ -1,5 +1,5 @@
 
 name: ${name}
 project: ${project}
-mode: offline
+mode: online
 config: cf_con_grid

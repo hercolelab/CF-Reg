@@ -75,32 +75,39 @@ class LightningClassifier(L.LightningModule):
         
     def training_step(self, batch: torch.Tensor, batch_idx: int) -> torch.Tensor:
                 
+        use_noise = torch.rand(1).item() < self.pnoise
         data, target = batch
-        use_noise: bool = torch.rand(1).item() < self.pnoise
-        noise_control_condition: bool = use_noise and self.noise_switch
-        
-        if use_noise and self.noise_switch:
             
-            target = torch.cat((target.unsqueeze(1).repeat(1, self.estimator.n_samples).view(-1), target))
+        if use_noise and self.noise_switch:
+            # Disable gradients for this part
+            self.model.eval()
+            data_out = self.model(data, False)
+            data_out = torch.argmax(data_out, dim=1)
 
-        output = self.model(data, noise_control_condition)
+            target = torch.cat((data_out.unsqueeze(1).repeat(1, self.estimator.n_samples).view(-1), target))
+
+        # Enable gradients for further steps
+        self.model.train()
+        output = self.model(data, (use_noise and self.noise_switch))
         values: dict = {"input": output, "target": target}
-        #out, target_cf = self.estimator.get_counterfactual(data=data, target=output, grad=self.counterfactual)
+        
+        # Disable gradients for counterfactual calculation
         out, target_cf = self.estimator.get_counterfactual(data=data, target=self.model(data, False), grad=False)
+
         p_x, e_z = self.estimator.counterfactual_probability(out=out, target=target_cf)
+
         if self.counterfactual:
             values = values | { "out_cf": out, "target_cf": target_cf}
-            
-        torch.set_grad_enabled(mode=True)
+
         loss = self.criterion(**values)        
         self.train_target += target[-data.shape[0]:].tolist()
         self.train_output += output[-data.shape[0]:].tolist()
         self.train_loss += [loss.item()]
         self.train_p_x += p_x.tolist()
         self.train_e_z += [e_z.item()]
-                
+                    
         return loss
-    
+
     def on_validation_epoch_start(self) -> None:
         
         self.val_output = []
@@ -111,11 +118,9 @@ class LightningClassifier(L.LightningModule):
     
     def on_validation_epoch_end(self) -> None:
         
-        stage: str = "validation" 
-        
         if self.trainer.state.stage != "sanity_check":
             
-            
+            stage: str = "validation"
             accuracy, f1, precision, recall = self.evaluator.get_complete_evaluation(self.val_output, self.val_target)
             
             self.log_dict({f"{stage}/loss": sum(self.val_loss)/len(self.val_loss), 
@@ -129,19 +134,25 @@ class LightningClassifier(L.LightningModule):
 
     def validation_step(self, batch, batch_idx):
         
-        data, target = batch
-        use_noise: bool = torch.rand(1).item() < self.pnoise
-        noise_control_condition: bool = use_noise and self.noise_switch
+        use_noise = torch.rand(1).item() < self.pnoise
         
-        if use_noise and self.noise_switch:
+        data, target = batch
+        
+        # if use_noise and self.noise_switch:
             
-            target = torch.cat((target.unsqueeze(1).repeat(1, self.estimator.n_samples).view(-1), target))
+        #     with torch.no_grad():
+            
+        #         data_out = self.model(data, False)
+        #         data_out = torch.argmax(data_out, dim=1)
+            
+        #     target = torch.cat((data_out.unsqueeze(1).repeat(1, self.estimator.n_samples).view(-1), target))
 
-        output = self.model(data, noise_control_condition)
+        output = self.model(data, False)
         values: dict = {"input": output, "target": target}
         #out, target_cf = self.estimator.get_counterfactual(data, output, grad=False)
         out, target_cf = self.estimator.get_counterfactual(data=data, target=self.model(data, False), grad=False)
         p_x, e_z = self.estimator.counterfactual_probability(out=out, target=target_cf)
+        
         if self.counterfactual:
             values = values | { "out_cf": out, "target_cf": target_cf}        
 
@@ -151,5 +162,4 @@ class LightningClassifier(L.LightningModule):
         self.val_loss += [val_loss.item()]   
         self.val_p_x += p_x.tolist()
         self.val_e_z += [e_z.item()]
-        
         return val_loss

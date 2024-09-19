@@ -97,7 +97,7 @@ def main(cfg: DictConfig) -> None:
         multiprocessing.set_start_method('spawn', force=True)
 
         # Number of parallel agents
-        num_agents = cfg.num_agents if 'num_agents' in cfg else 3 # Default to 4 agents if not specified
+        num_agents = cfg.num_agents if 'num_agents' in cfg else 4 # Default to 4 agents if not specified
         processes = []
         for _ in range(num_agents):
             p = multiprocessing.Process(target=run_sweep_agent, args=(cfg, sweep_id))
