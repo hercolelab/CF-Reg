@@ -6,6 +6,7 @@ import numpy as np
 from typing import Tuple
 import os
 from scipy.io import arff
+import random
 
 def features_transformation(X_train, X_test, preprocess_config):
     poly_features_enabled = preprocess_config['poly_features_enabled']
@@ -95,7 +96,9 @@ def get_dataset(**kwargs) -> Tuple[TensorDataset, TensorDataset]:
     name: str = kwargs['name']
     binary_loss: bool = kwargs['binary']
     preprocess_config: dict = kwargs['preprocess_config']
-   
+    noise_rate: float = preprocess_config.pop('noise_rate', 0.0) # New parameter for noise rate
+    seed_noise: int = preprocess_config.pop('seed_noise', 42) # Seed for reproducibility of noise
+
 
 
     dtype_in = torch.float32
@@ -159,6 +162,34 @@ def get_dataset(**kwargs) -> Tuple[TensorDataset, TensorDataset]:
 
         train_set = TensorDataset(training_data.data.type(torch.float).unsqueeze(1), torch.tensor(training_data.targets, dtype= dtype_out))
         test_set = TensorDataset(test_data.data.type(torch.float).unsqueeze(1), torch.tensor(test_data.targets, dtype= dtype_out))
+
+        # Apply label noise to the training set for FashionMNIST
+        if noise_rate > 0:
+            original_train_labels = train_set.tensors[1].clone()
+            num_samples = len(original_train_labels)
+            num_noisy_samples = int(noise_rate * num_samples)
+            
+            unique_classes = torch.unique(original_train_labels).tolist()
+            if len(unique_classes) < 2:
+                print("Warning: Cannot apply label noise with less than 2 unique classes.")
+            else:
+                random.seed(seed_noise)
+                noisy_indices = random.sample(range(num_samples), num_noisy_samples)
+
+                is_noisy_label = torch.zeros_like(original_train_labels, dtype=torch.bool)
+                is_noisy_label[noisy_indices] = True
+
+                for idx in noisy_indices:
+                    original_label = original_train_labels[idx].item()
+                    possible_flips = [c for c in unique_classes if c != original_label]
+                    if possible_flips:
+                        new_label = random.choice(possible_flips)
+                        train_set.tensors[1][idx] = torch.tensor(new_label, dtype=dtype_out)
+                
+                train_set.original_labels = original_train_labels
+                train_set.is_noisy_label = is_noisy_label
+                print(f"Applied {num_noisy_samples} ({noise_rate*100:.2f}%) noisy labels to the training set.")
+
 
         #Print some data information
         labels = test_set.tensors[1]

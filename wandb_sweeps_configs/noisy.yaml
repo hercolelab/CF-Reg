@@ -1,0 +1,23 @@
+method: bayes
+name: 20_MNIST_ResNet_SCFE_Bayes
+metric:
+  goal: maximize
+  name: validation/accuracy
+parameters:
+  loss.alpha:  # `alpha` nested under `loss`
+    distribution: uniform
+    min: -1.0
+    max: -0.0000001
+  estimator.reg_coef.value:  # `reg_coef` nested under `estimator`
+    distribution: uniform
+    min: 0.01
+    max: 2.5
+  model:
+    values:
+      - {model_type: BPreActResNet}
+  preprocessor:
+    values:
+      - {poly_features_degree: 1, resample: 1, noise_rate: 0.2, seed_noise: 42}
+early_terminate:
+  type: hyperband
+  max_iter: 150

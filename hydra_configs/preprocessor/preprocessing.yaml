@@ -13,3 +13,6 @@ rp_n_components: 100 #only used if rp_components_rate is 0
 rff_enabled : False #random fourier features
 rff_components_rate : 1
 rff_n_components: 100 #only used if rp_components_rate is 0
+
+noise_rate: 0.2
+seed_noise: 42

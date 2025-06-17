@@ -55,7 +55,8 @@ def get_model(**kwargs) -> torch.nn.Module:
     
     elif model_type == "BPreActResNet":
         from src.models.models import BPreActResNet, PreActBlock
-        model = BPreActResNet(PreActBlock, [2,2,2,2], num_classes=1)
+        channel_input=config["channel_in"]
+        model = BPreActResNet(PreActBlock, [2,2,2,2], num_classes=1, channel_in=channel_input)
 
         return model.to(device)
     else:
