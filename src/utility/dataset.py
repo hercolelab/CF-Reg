@@ -186,8 +186,8 @@ def get_dataset(**kwargs) -> Tuple[TensorDataset, TensorDataset]:
                         new_label = random.choice(possible_flips)
                         train_set.tensors[1][idx] = torch.tensor(new_label, dtype=dtype_out)
                 
-                train_set.original_labels = original_train_labels
-                train_set.is_noisy_label = is_noisy_label
+                train_set = TensorDataset(train_set.tensors[0], train_set.tensors[1], original_train_labels, is_noisy_label)
+
                 print(f"Applied {num_noisy_samples} ({noise_rate*100:.2f}%) noisy labels to the training set.")
 
 

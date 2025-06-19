@@ -4,7 +4,7 @@ test_size : 0.2
 seed_split: 42
 
 poly_features_enabled: True
-poly_features_degree: 6
+poly_features_degree: 1
 
 rp_enabled: False #random projection
 rp_components_rate : 1
