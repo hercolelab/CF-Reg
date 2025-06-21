@@ -101,7 +101,7 @@ class LightningClassifier(L.LightningModule):
                 # Filter noisy data (where the original label was different from the current label)
                 # This specifically targets labels that were intentionally flipped
                 actually_flipped_mask = (original_targets != current_targets) & is_noisy
-                noisy_outputs = outputs[actually_flipped_mask]
+                noisy_outputs = outputs[actually_flipped_mask]  # predictions for noisy data
                 noisy_original_targets = original_targets[actually_flipped_mask] # Use original targets for 'noisy' data to evaluate against true labels
 
                 if len(clean_outputs) > 0:
