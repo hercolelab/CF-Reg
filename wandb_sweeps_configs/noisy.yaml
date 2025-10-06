@@ -1,9 +1,12 @@
 method: grid
-name: 20_MNIST_ResNet_SCFE_TPTN_Grid
+name: 20_CIFAR_ResNet_SCFE_TPTN_OPT_Hyper_Grid
 metric:
   goal: maximize
   name: validation/accuracy
 parameters:
+  optimizer.name:
+    values:
+      - adam
   loss.aggr_func.type:  # `aggr_func` nested under `loss`
     values:
       - tp_tn_mean
@@ -35,7 +38,7 @@ parameters:
       - 2.0
   model:
     values:
-      - {model_type: BPreActResNet}
+      - {model_type: BMLP, hidden_layers: [100, 1000, 100, 30], dropout: 0.0, single_output: True}
   preprocessor:
     values:
       - {poly_features_degree: 1, resample: 1, noise_rate: 0.2, seed_noise: 42}

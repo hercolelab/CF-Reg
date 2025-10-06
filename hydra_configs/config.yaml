@@ -2,16 +2,16 @@ defaults:
   - _self_
   - loader: loader
   - loss: scfe_regularization
-  - model: bpreactresnet    # mlp - water or cnn - cifar10
+  - model: bmlp    # mlp - water or cnn - cifar10
   - logger: wandb
-  - data: mnist
+  - data: water
   - trainer: trainer_default
   - optimizer: sgd
   - estimator: scfe
   - preprocessor: preprocessing
 
 run_mode: sweep #run       
-project: counterfactual_overfitting_experiments_new
+project: cfreg_noisy_setting
 name: experiments
 version: 1
 seed: 42

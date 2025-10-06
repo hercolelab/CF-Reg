@@ -59,6 +59,13 @@ def get_model(**kwargs) -> torch.nn.Module:
         model = BPreActResNet(PreActBlock, [2,2,2,2], num_classes=1, channel_in=channel_input)
 
         return model.to(device)
+
+    elif model_type == "alexnet":
+        from torchvision import models
+        model = models.alexnet(pretrained=False)
+        model.classifier[6] = torch.nn.Linear(model.classifier[6].in_features, out_features=1)
+
+        return model.to(device)
     else:
         
         raise ValueError(f"{model_type} is not a valide model type!")

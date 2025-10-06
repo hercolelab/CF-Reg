@@ -2,5 +2,5 @@ defaults:
   - aggr_func: mean
 
 type: scfe_regularization
-alpha: 0.1
+alpha: 1.0
 binary: True #Use [True] when the target vector is 1D otherwise use [False] 

@@ -1,9 +1,0 @@
-method: bayes
-name: counterfactual_overfitting
-metric:
-  goal: maximize
-  name: validation/accuracy
-parameters:
-  weight_decay:
-    min: 0.00001
-    max: 0.9

@@ -1,9 +1,0 @@
-method: bayes
-name: Water_BMLP_Dropout_Bayes
-metric:
-  goal: maximize
-  name: validation/accuracy
-parameters:
-  model.dropout:
-    min: 0.0001
-    max: 0.9

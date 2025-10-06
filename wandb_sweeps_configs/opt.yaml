@@ -1,0 +1,16 @@
+method: grid
+name: WATER_SmMLP_SCFE_CompareNoise_Hyper_Grid
+metric:
+  goal: maximize
+  name: validation/accuracy
+parameters:
+  optimizer.name:
+    values:
+      - adam
+  model:
+    values:
+      - {model_type: BMLP, hidden_layers: [100, 30], dropout: 0.0, single_output: True} #SmMLP#  - {model_type: BMLP, hidden_layers: [100, 1000, 30], dropout: 0.0, single_output: True} #BigMLP
+  preprocessor:
+    values:
+      - {poly_features_degree: 1, resample: 1, noise_rate: 0.0, seed_noise: 42}
+      - {poly_features_degree: 1, resample: 1, noise_rate: 0.2, seed_noise: 42}

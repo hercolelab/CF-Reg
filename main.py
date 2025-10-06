@@ -32,8 +32,20 @@ def log_params(cfg: DictConfig) -> None:
 def set_run_name(cfg, run):
     
     from datetime import datetime
+    
+    if cfg.loss.type == "normal":
+        loss_name = "CE"
+    elif cfg.loss.type == "scfe_regularization":
+        loss_name = "SCFE"
+    else:   
+        loss_name = cfg.loss.type
 
-    run_name: str = f"{cfg.model.model_type}_{cfg.data.name}_{cfg.loss.type}_{datetime.now().strftime('%Y-%m-%d %H:%M:%S')}"
+    if cfg.model.model_type == "BPreActResNet":
+        model_name = "ResNet"
+    else:
+        model_name = cfg.model.model_type
+
+    run_name: str = f"{model_name}_{cfg.data.name}_{loss_name}_{cfg.preprocessor.noise_rate}_{datetime.now().strftime('%Y-%m-%d %H:%M:%S')}"
     run.name = run_name
     run.save()
 

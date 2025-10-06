@@ -53,6 +53,34 @@ def features_transformation(X_train, X_test, preprocess_config):
         
     return X_train, X_test
 
+def apply_noise(train_set, noise_rate, seed_noise, dtype_out):
+    original_train_labels = train_set.tensors[1].clone()
+    num_samples = len(original_train_labels)
+    num_noisy_samples = int(noise_rate * num_samples)
+    
+    unique_classes = torch.unique(original_train_labels).tolist()
+    if len(unique_classes) < 2:
+        print("Warning: Cannot apply label noise with less than 2 unique classes.")
+    else:
+        random.seed(seed_noise)
+        noisy_indices = random.sample(range(num_samples), num_noisy_samples)
+
+        is_noisy_label = torch.zeros_like(original_train_labels, dtype=torch.bool)
+        is_noisy_label[noisy_indices] = True
+
+        for idx in noisy_indices:
+            original_label = original_train_labels[idx].item()
+            possible_flips = [c for c in unique_classes if c != original_label]
+            if possible_flips:
+                new_label = random.choice(possible_flips)
+                train_set.tensors[1][idx] = torch.tensor(new_label, dtype=dtype_out)
+        
+        train_set = TensorDataset(train_set.tensors[0], train_set.tensors[1], original_train_labels, is_noisy_label)
+
+        print(f"Applied {num_noisy_samples} ({noise_rate*100:.2f}%) noisy labels to the training set.")
+
+    return train_set
+
 def preprocess(df, preprocess_config, target_name):
     from sklearn.preprocessing import StandardScaler, MinMaxScaler
     from sklearn.utils import resample, shuffle
@@ -66,8 +94,7 @@ def preprocess(df, preprocess_config, target_name):
         df = resample(df, n_samples=int(df.shape[0] * resample_value), random_state=seed_resample, stratify=df[target_name], replace=False)
     elif resample_value > 1:
         df = resample(df, n_samples=int(resample_value), random_state=seed_resample, stratify=df[target_name], replace=False)
-    else:
-        df = shuffle(df, random_state=seed_resample)
+
 
     # Define features and target
     X = df.drop(target_name, axis=1).values
@@ -88,8 +115,8 @@ def preprocess(df, preprocess_config, target_name):
     #if (preprocess_config['poly_features_degree'] != 1):
     X_train, X_test = features_transformation(X_train, X_test, preprocess_config)
     
-    #print(list(np.mean(X_train, axis = 0)))
-    #print("\n","\n",list(np.std(X_train, axis = 0)))
+#    print(list(np.mean(X_train, axis = 0)))
+#    print("\n","\n",list(np.std(X_train, axis = 0)))
     return X_train, X_test, y_train, y_test
 
 def get_dataset(**kwargs) -> Tuple[TensorDataset, TensorDataset]:
@@ -123,6 +150,9 @@ def get_dataset(**kwargs) -> Tuple[TensorDataset, TensorDataset]:
         train_set = TensorDataset(torch.tensor(X_train, dtype=dtype_in), torch.tensor(y_train,dtype=dtype_out))
         test_set = TensorDataset(torch.tensor(X_test, dtype=dtype_in), torch.tensor(y_test, dtype=dtype_out))
         
+        if noise_rate > 0:
+            train_set = apply_noise(train_set, noise_rate, seed_noise, dtype_out)
+
         return train_set, test_set
     
     elif name == "mnist":
@@ -165,30 +195,7 @@ def get_dataset(**kwargs) -> Tuple[TensorDataset, TensorDataset]:
 
         # Apply label noise to the training set for FashionMNIST
         if noise_rate > 0:
-            original_train_labels = train_set.tensors[1].clone()
-            num_samples = len(original_train_labels)
-            num_noisy_samples = int(noise_rate * num_samples)
-            
-            unique_classes = torch.unique(original_train_labels).tolist()
-            if len(unique_classes) < 2:
-                print("Warning: Cannot apply label noise with less than 2 unique classes.")
-            else:
-                random.seed(seed_noise)
-                noisy_indices = random.sample(range(num_samples), num_noisy_samples)
-
-                is_noisy_label = torch.zeros_like(original_train_labels, dtype=torch.bool)
-                is_noisy_label[noisy_indices] = True
-
-                for idx in noisy_indices:
-                    original_label = original_train_labels[idx].item()
-                    possible_flips = [c for c in unique_classes if c != original_label]
-                    if possible_flips:
-                        new_label = random.choice(possible_flips)
-                        train_set.tensors[1][idx] = torch.tensor(new_label, dtype=dtype_out)
-                
-                train_set = TensorDataset(train_set.tensors[0], train_set.tensors[1], original_train_labels, is_noisy_label)
-
-                print(f"Applied {num_noisy_samples} ({noise_rate*100:.2f}%) noisy labels to the training set.")
+            train_set = apply_noise(train_set, noise_rate, seed_noise, dtype_out)
 
 
         #Print some data information
@@ -241,6 +248,10 @@ def get_dataset(**kwargs) -> Tuple[TensorDataset, TensorDataset]:
         test_set = TensorDataset(test_data.data.type(torch.float).unsqueeze(1),
                                 torch.tensor(test_data.targets, dtype=dtype_out))
 
+        # Apply label noise to the training set for FashionMNIST
+        if noise_rate > 0:
+            train_set = apply_noise(train_set, noise_rate, seed_noise, dtype_out)
+
         # Print some data information
         labels = test_set.tensors[1]
         unique_classes, counts = torch.unique(labels, return_counts=True)
@@ -288,6 +299,9 @@ def get_dataset(**kwargs) -> Tuple[TensorDataset, TensorDataset]:
                                 torch.tensor(training_data.targets, dtype=dtype_out))
         test_set = TensorDataset(test_data_tensor,
                                 torch.tensor(test_data.targets, dtype=dtype_out))
+
+        if noise_rate > 0:
+            train_set = apply_noise(train_set, noise_rate, seed_noise, dtype_out)
 
         # Print some data information
         labels = torch.tensor(test_data.targets, dtype=dtype_out)
@@ -368,6 +382,9 @@ def get_dataset(**kwargs) -> Tuple[TensorDataset, TensorDataset]:
         
         train_set = TensorDataset(torch.tensor(X_train, dtype=dtype_in), torch.tensor(y_train,dtype=dtype_out))
         test_set = TensorDataset(torch.tensor(X_test, dtype=dtype_in), torch.tensor(y_test, dtype=dtype_out))
+
+        if noise_rate > 0:
+            train_set = apply_noise(train_set, noise_rate, seed_noise, dtype_out)
         
         return train_set, test_set
 
@@ -404,6 +421,9 @@ def get_dataset(**kwargs) -> Tuple[TensorDataset, TensorDataset]:
         
         train_set = TensorDataset(torch.tensor(X_train, dtype=dtype_in), torch.tensor(y_train,dtype=dtype_out))
         test_set = TensorDataset(torch.tensor(X_test, dtype=dtype_in), torch.tensor(y_test, dtype=dtype_out))
+
+        if noise_rate > 0:
+            train_set = apply_noise(train_set, noise_rate, seed_noise, dtype_out)
         
         return train_set, test_set
 
