@@ -1,5 +1,5 @@
 method: grid
-name: 5_Phomene_BMLP_scfe_Adam_8
+name: 5_Higgs_BMLP_BIG_SCFE_TPTN # 5_Higgs_BMLP_BIG_SCFE_EpsilonVCP # 
 metric:
   goal: maximize
   name: validation/accuracy
@@ -13,16 +13,20 @@ parameters:
       - 46
   loss:
     values:
-      - {type: scfe_regularization, alpha: -0.023849561620946313}
+      - {type: scfe_regularization, alpha: -0.4231515950404812}
 #      - {type: normal, alpha: 0.0005}
 #      - {type: scfe_regularization, alpha: -0.6816607573884588}
+  loss.aggr_func:
+    values:
+      - {type: tp_tn_mean} #  - {type: montecarlo_vcp_weighted_mean} #  
   estimator.reg_coef:
     values:
-      - {rc_type: 'by_value', value: 1.6907491399955734}
+      - {rc_type: 'by_value', value: 2.1488529029721986}
   model:
     values:
-      - {model_type: BMLP, hidden_layers: [100, 40], dropout: 0.0, single_output: True}
-  #    - {model_type: BMLP, hidden_layers: [150,1000,150, 30], dropout: 0.0, single_output: True}
+  #    - {model_type: BMLP, hidden_layers: [100, 30], dropout: 0.0, single_output: True}
+  #  - {model_type: BMLP, hidden_layers: [100, 40], dropout: 0.0, single_output: True}
+    - {model_type: BMLP, hidden_layers: [150,1000,150, 30], dropout: 0.0, single_output: True}
   preprocessor:
     values:
       - {poly_features_degree: 1, resample: 1}

@@ -2,4 +2,4 @@
 name: ${name}
 project: ${project}
 mode: online
-config: 5_seeds_time
+config: cifar10_resnet_scfe_bayes

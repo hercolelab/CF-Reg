@@ -1,9 +1,12 @@
 method: bayes
-name: Water_BMLP_SCFE_Bayes_Adam_Alto
+name: PHONEME_SmallBMLP_SCFE_EpsilonVCP # HIGGS_BigMLP_SCFE_TPTN # 
 metric:
   goal: maximize
   name: validation/accuracy
 parameters:
+  loss.aggr_func.type:  # `aggr_func` nested under `loss`
+    values:
+      - montecarlo_vcp_weighted_mean # - tp_tn_mean #    
   loss.alpha:  # `alpha` nested under `loss`
     distribution: uniform
     min: -1.0
@@ -14,9 +17,9 @@ parameters:
     max: 2.5
   model:
     values:
-    - {model_type: BMLP, hidden_layers: [100,30], dropout: 0.0, single_output: True}
-  #  - {model_type: BMLP, hidden_layers: [100,40], dropout: 0.0, single_output: True}
-  #   - {model_type: BMLP, hidden_layers: [150,1000,150,30], dropout: 0.0, single_output: True}
+  #  - {model_type: BMLP, hidden_layers: [100,30], dropout: 0.0, single_output: True}
+    - {model_type: BMLP, hidden_layers: [100,40], dropout: 0.0, single_output: True}
+  #  - {model_type: BMLP, hidden_layers: [150,1000,150,30], dropout: 0.0, single_output: True}
   preprocessor:
     values:
       - {poly_features_degree: 1, resample: 1}

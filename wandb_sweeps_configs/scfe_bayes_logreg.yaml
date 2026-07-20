@@ -1,17 +1,20 @@
 method: bayes
-name: Phomene_LogReg_SCFE_Bayes_Adam_Basso_Basso_Basso
+name: PHONEME_SCFE_LogReg_Bayes_EpsilonVCP # PHONEME_SCFE_LogReg_Bayes_TPTN # 
 metric:
   goal: maximize
   name: validation/accuracy
 parameters:
+  loss.aggr_func.type:  # `aggr_func` nested under `loss`
+    values:
+      - montecarlo_vcp_weighted_mean # - tp_tn_mean # 
   loss.alpha:  # `alpha` nested under `loss`
     distribution: uniform
-    min: -0.0001
-    max: -0.000000001
+    min: -1.0
+    max: -0.05
   estimator.reg_coef.value:  # `reg_coef` nested under `estimator`
     distribution: uniform
-    min: 0.00000001
-    max: 0.15
+    min: 0.1
+    max: 2.3
   model:
     values:
       - {model_type: LogisticRegression}

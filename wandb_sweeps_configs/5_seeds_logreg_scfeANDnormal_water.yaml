@@ -1,5 +1,5 @@
 method: grid
-name: 5_Phomene_LogReg_SCFE_Adam_1
+name: 5_Phoneme_LogReg_SCFE_EpsilonVCP # 5_Phoneme_LogReg_SCFE_TPTN # 
 metric:
   goal: maximize
   name: validation/accuracy
@@ -13,10 +13,13 @@ parameters:
       - 46
   loss:
     values:
-      - {type: scfe_regularization, alpha: -1.847013051568084e-06}
+      - {type: scfe_regularization, alpha: -0.6498512787189685}
+  loss.aggr_func:
+    values:
+      - {type: montecarlo_vcp_weighted_mean} # - {type: tp_tn_mean} # 
   estimator.reg_coef:
     values:
-      - {rc_type: 'by_value', value: 0.10410208792932552}
+      - {rc_type: 'by_value', value: 1.0577278144077804}
   model:
     values:
       - {model_type: LogisticRegression}

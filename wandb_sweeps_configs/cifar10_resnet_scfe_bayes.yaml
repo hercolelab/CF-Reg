@@ -1,13 +1,16 @@
 method: bayes
-name: CIFAR10_ResNet_SCFE_Bayes_adam_low_alpha
+name: CIFAR10_ResNet_SCFE_EpsilonVCP # CIFAR10_ResNet_SCFE_TPTN #
 metric:
   goal: maximize
   name: validation/accuracy
 parameters:
+  loss.aggr_func.type:  # `aggr_func` nested under `loss`
+    values:
+      - montecarlo_vcp_weighted_mean # - tp_tn_mean # 
   loss.alpha:  # `alpha` nested under `loss`
     distribution: uniform
-    min: -0.001
-    max: -0.00000001
+    min: -1.0
+    max: -0.0000001
   estimator.reg_coef.value:  # `reg_coef` nested under `estimator`
     distribution: uniform
     min: 0.00001
