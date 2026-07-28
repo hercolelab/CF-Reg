@@ -33,6 +33,11 @@ class LightningClassifier(L.LightningModule):
         self.val_target = []
         self.val_loss = []
         self.val_p_x = []
+        self.test_output = []
+        self.test_target = []
+        self.test_loss = []
+        self.test_samples = 0
+        self.test_p_x = []
         self.train_embeddings = []
         self.test_embeddings = []
         self.evaluator = evaluator
@@ -211,10 +216,8 @@ class LightningClassifier(L.LightningModule):
         #p_x = self.estimator.get_estimate(out=out, target=target_cf)
    
 #        old_params = {name: param.clone() for name, param in self.model.named_parameters()}
-        torch.set_grad_enabled(mode=True)
-        estimate = self.estimator.get_estimate(data = data, output = output)
-   
-        torch.set_grad_enabled(mode=False)
+        with torch.enable_grad():
+            estimate = self.estimator.get_estimate(data = data, output = output)
         #  new_params = {name: param for name, param in self.model.named_parameters()}
 
         values: dict = {"input": output, "target": target, "estimate": estimate, "weights": self.model.parameters(), "data": data}
@@ -235,3 +238,50 @@ class LightningClassifier(L.LightningModule):
 #            else:
 #                print(f"Parameter '{name}' is unchanged.")
         return val_loss
+
+    def on_test_epoch_start(self) -> None:
+        self.test_t_start = time.time_ns()
+        self.test_output = []
+        self.test_target = []
+        self.test_loss = []
+        self.test_samples = 0
+        self.test_estimate = []
+
+    def on_test_epoch_end(self) -> None:
+        self.test_t_end = time.time_ns()
+        stage: str = "test"
+        accuracy, f1, precision, recall, crossentropy = self.evaluator.get_complete_evaluation(self.test_output, self.test_target)
+
+        log_data = {
+            f"{stage}/loss": sum(self.test_loss) / self.test_samples,
+            f"{stage}/epoch": self.current_epoch,
+            f"{stage}/accuracy": accuracy,
+            f"{stage}/f1-score": f1,
+            f"{stage}/precision": precision,
+            f"{stage}/recall": recall,
+            f"{stage}/crossentropy": crossentropy,
+            f"{stage}/time_elapsed" : self.test_t_end - self.test_t_start
+        }
+
+        estimator_log_data = self.estimator.build_log(self.test_estimate, stage)
+        log_data.update(estimator_log_data)
+
+        self.log_dict(log_data, on_epoch=True, on_step=False)
+
+    def test_step(self, batch, batch_idx):
+        data, target = batch
+        output = self.model(data)
+
+        with torch.enable_grad():
+            estimate = self.estimator.get_estimate(data=data, output=output)
+
+        values: dict = {"input": output, "target": target, "estimate": estimate, "weights": self.model.parameters(), "data": data}
+        test_loss = self.criterion(**values)
+
+        self.test_target += target.tolist()
+        self.test_output += output.tolist()
+        self.test_loss += [test_loss.item() * target.size(0)]
+        self.test_samples += target.size(0)
+        self.test_estimate += estimate.tolist()
+
+        return test_loss

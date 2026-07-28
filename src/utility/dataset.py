@@ -7,7 +7,10 @@ from typing import Tuple
 import os
 from scipy.io import arff
 
-def features_transformation(X_train, X_test, preprocess_config):
+SPLIT_SEED = 42
+
+
+def features_transformation(X_train, X_test, preprocess_config, random_seed):
     poly_features_enabled = preprocess_config['poly_features_enabled']
     rp_enabled = preprocess_config['rp_enabled']
     rff_enabled = preprocess_config['rff_enabled']
@@ -28,7 +31,7 @@ def features_transformation(X_train, X_test, preprocess_config):
         else:
             n_components = preprocess_config['rp_n_components']
         old_shape = X_train.shape
-        rp = GaussianRandomProjection(n_components=n_components, random_state=42)
+        rp = GaussianRandomProjection(n_components=n_components, random_state=random_seed)
         rp.fit(X_train)
         X_train = rp.transform(X_train)
         X_test = rp.transform(X_test)
@@ -41,7 +44,7 @@ def features_transformation(X_train, X_test, preprocess_config):
         else:
             n_components = preprocess_config['rff_n_components']
         old_shape = X_train.shape
-        rff = RBFSampler(n_components=n_components, random_state=42, gamma = "scale")
+        rff = RBFSampler(n_components=n_components, random_state=random_seed, gamma = "scale")
         rff.fit(X_train)
         X_train = rff.transform(X_train)
         X_test = rff.transform(X_test)
@@ -52,29 +55,43 @@ def features_transformation(X_train, X_test, preprocess_config):
         
     return X_train, X_test
 
-def preprocess(df, preprocess_config, target_name):
+def preprocess(df, preprocess_config, target_name, random_seed, include_validation=False):
     from sklearn.preprocessing import StandardScaler, MinMaxScaler
-    from sklearn.utils import resample, shuffle
-    
-    seed_split = preprocess_config['seed_split']
-    print("seed_split: ", seed_split)
-    seed_resample = 42
-
-    resample_value = preprocess_config['resample']
-    if resample_value < 1:
-        df = resample(df, n_samples=int(df.shape[0] * resample_value), random_state=seed_resample, stratify=df[target_name], replace=False)
-    elif resample_value > 1:
-        df = resample(df, n_samples=int(resample_value), random_state=seed_resample, stratify=df[target_name], replace=False)
-    else:
-        df = shuffle(df, random_state=seed_resample)
+    from sklearn.utils import resample
 
     # Define features and target
     X = df.drop(target_name, axis=1).values
     y = df[target_name].values
 
     test_size = preprocess_config['test_size']
-    # Split data into training and testing
-    X_train, X_test, y_train, y_test = train_test_split(X, y, test_size=test_size, random_state=seed_split, stratify=df[target_name])
+    # Reserve the test set first so train + validation matches the old training split.
+    X_train_val, X_test, y_train_val, y_test = train_test_split(
+        X,
+        y,
+        test_size=test_size,
+        random_state=SPLIT_SEED,
+        stratify=y,
+    )
+
+    if include_validation:
+        if not 0 < test_size < 0.5:
+            raise ValueError("test_size must be between 0 and 0.5 for a train-validation-test split")
+        validation_size = test_size / (1 - test_size)
+        X_train, X_validation, y_train, y_validation = train_test_split(
+            X_train_val,
+            y_train_val,
+            test_size=validation_size,
+            random_state=SPLIT_SEED,
+            stratify=y_train_val,
+        )
+    else:
+        X_train, y_train = X_train_val, y_train_val
+
+    resample_value = preprocess_config['resample']
+    if resample_value < 1:
+        X_train, y_train = resample(X_train, y_train, n_samples=int(X_train.shape[0] * resample_value), random_state=random_seed, stratify=y_train, replace=False)
+    elif resample_value > 1:
+        X_train, y_train = resample(X_train, y_train, n_samples=int(resample_value), random_state=random_seed, stratify=y_train, replace=False)
 
     if preprocess_config['scaler'] == "MinMax":
         scaler = MinMaxScaler()
@@ -83,21 +100,37 @@ def preprocess(df, preprocess_config, target_name):
     scaler.fit(X_train)
     X_train = scaler.transform(X_train)
     X_test = scaler.transform(X_test)
+    if include_validation:
+        X_validation = scaler.transform(X_validation)
     
     #if (preprocess_config['poly_features_degree'] != 1):
-    X_train, X_test = features_transformation(X_train, X_test, preprocess_config)
+    if include_validation:
+        validation_length = len(X_validation)
+        X_train, X_validation_and_test = features_transformation(
+            X_train,
+            np.concatenate((X_validation, X_test)),
+            preprocess_config,
+            random_seed,
+        )
+        X_validation = X_validation_and_test[:validation_length]
+        X_test = X_validation_and_test[validation_length:]
+    else:
+        X_train, X_test = features_transformation(X_train, X_test, preprocess_config, random_seed)
     #scaler = StandardScaler()
     #scaler.fit(X_train)
     #X_train = scaler.transform(X_train)
     #X_test = scaler.transform(X_test)
     #print(list(np.mean(X_train, axis = 0)))
     #print("\n","\n",list(np.std(X_train, axis = 0)))
+    if include_validation:
+        return X_train, X_validation, X_test, y_train, y_validation, y_test
     return X_train, X_test, y_train, y_test
 
-def get_dataset(**kwargs) -> Tuple[TensorDataset, TensorDataset]:
+def get_dataset(**kwargs) -> Tuple[TensorDataset, ...]:
     name: str = kwargs['name']
     binary_loss: bool = kwargs['binary']
     preprocess_config: dict = kwargs['preprocess_config']
+    random_seed: int = kwargs['seed']
    
 
 
@@ -118,12 +151,19 @@ def get_dataset(**kwargs) -> Tuple[TensorDataset, TensorDataset]:
         df['Sulfate'] = df['Sulfate'].fillna(value=df['Sulfate'].median())
         df['Trihalomethanes'] = df['Trihalomethanes'].fillna(value=df['Trihalomethanes'].median())
 
-        X_train, X_test, y_train, y_test = preprocess(df, preprocess_config, 'Potability')
+        X_train, X_validation, X_test, y_train, y_validation, y_test = preprocess(
+            df,
+            preprocess_config,
+            'Potability',
+            random_seed,
+            include_validation=True,
+        )
         
         train_set = TensorDataset(torch.tensor(X_train, dtype=dtype_in), torch.tensor(y_train,dtype=dtype_out))
+        validation_set = TensorDataset(torch.tensor(X_validation, dtype=dtype_in), torch.tensor(y_validation, dtype=dtype_out))
         test_set = TensorDataset(torch.tensor(X_test, dtype=dtype_in), torch.tensor(y_test, dtype=dtype_out))
         
-        return train_set, test_set
+        return train_set, validation_set, test_set
     
     elif name == "mnist":
         from torchvision import datasets
@@ -246,18 +286,29 @@ def get_dataset(**kwargs) -> Tuple[TensorDataset, TensorDataset]:
             training_data.targets = (np.array(training_data.targets) == 5).astype(np.uint8)
             test_data.targets = (np.array(test_data.targets) == 5).astype(np.uint8)
 
+        train_data, validation_data, train_targets, validation_targets = train_test_split(
+            training_data.data,
+            np.asarray(training_data.targets),
+            test_size=preprocess_config['test_size'],
+            random_state=SPLIT_SEED,
+            stratify=training_data.targets,
+        )
+
         # Normalize the data (and rearranges)
         transform = transforms.Compose([
             transforms.ToTensor(),
             transforms.Normalize((0.4914, 0.4822, 0.4465), (0.2023, 0.1994, 0.2010))  # CIFAR-10 normalization values
         ])
 
-        train_data_tensor = torch.stack([transform(img) for img in training_data.data])
+        train_data_tensor = torch.stack([transform(img) for img in train_data])
+        validation_data_tensor = torch.stack([transform(img) for img in validation_data])
         test_data_tensor = torch.stack([transform(img) for img in test_data.data])
 
         # Create TensorDataset
         train_set = TensorDataset(train_data_tensor,
-                                torch.tensor(training_data.targets, dtype=dtype_out))
+                                torch.tensor(train_targets, dtype=dtype_out))
+        validation_set = TensorDataset(validation_data_tensor,
+                                torch.tensor(validation_targets, dtype=dtype_out))
         test_set = TensorDataset(test_data_tensor,
                                 torch.tensor(test_data.targets, dtype=dtype_out))
 
@@ -270,7 +321,7 @@ def get_dataset(**kwargs) -> Tuple[TensorDataset, TensorDataset]:
         for cls, count, prop in zip(unique_classes, counts, proportions):
             print(f"Class {cls.item()}: Count = {count.item()}, Proportion = {prop.item():.2%}")
 
-        return train_set, test_set
+        return train_set, validation_set, test_set
     
         #train_set = TensorDataset(torch.Tensor(training_data.data).type(torch.float16).permute(0,3,1,2), torch.Tensor(training_data.targets).type(torch.uint8))
         #test_set = TensorDataset(torch.from_numpy(test_data.data).type(torch.float16).permute(0,3,1,2), torch.Tensor(test_data.targets).type(torch.uint8))
@@ -336,7 +387,7 @@ def get_dataset(**kwargs) -> Tuple[TensorDataset, TensorDataset]:
 
         print("\nDataset Shape:", data.shape)
 
-        X_train, X_test, y_train, y_test = preprocess(data, preprocess_config, 'income')
+        X_train, X_test, y_train, y_test = preprocess(data, preprocess_config, 'income', random_seed)
         
         train_set = TensorDataset(torch.tensor(X_train, dtype=dtype_in), torch.tensor(y_train,dtype=dtype_out))
         test_set = TensorDataset(torch.tensor(X_test, dtype=dtype_in), torch.tensor(y_test, dtype=dtype_out))
@@ -356,7 +407,7 @@ def get_dataset(**kwargs) -> Tuple[TensorDataset, TensorDataset]:
         y = y.replace({'g': 1, 'b': 0})
         df = pd.concat([X, y], axis=1)
 
-        X_train, X_test, y_train, y_test = preprocess(df, preprocess_config, 'Class')
+        X_train, X_test, y_train, y_test = preprocess(df, preprocess_config, 'Class', random_seed)
 
         train_set = TensorDataset(torch.tensor(X_train, dtype=dtype_in), torch.tensor(y_train,dtype=dtype_out))
         test_set = TensorDataset(torch.tensor(X_test, dtype=dtype_in), torch.tensor(y_test, dtype=dtype_out))
@@ -372,12 +423,19 @@ def get_dataset(**kwargs) -> Tuple[TensorDataset, TensorDataset]:
             raise ValueError(f"Phomene dataset is not inside the data folder! cwd {os.getcwd()}")
         df['Class'] = df['Class'].apply(lambda x: 0 if x == 1 else 1)
 
-        X_train, X_test, y_train, y_test = preprocess(df, preprocess_config, 'Class')
+        X_train, X_validation, X_test, y_train, y_validation, y_test = preprocess(
+            df,
+            preprocess_config,
+            'Class',
+            random_seed,
+            include_validation=True,
+        )
         
         train_set = TensorDataset(torch.tensor(X_train, dtype=dtype_in), torch.tensor(y_train,dtype=dtype_out))
+        validation_set = TensorDataset(torch.tensor(X_validation, dtype=dtype_in), torch.tensor(y_validation, dtype=dtype_out))
         test_set = TensorDataset(torch.tensor(X_test, dtype=dtype_in), torch.tensor(y_test, dtype=dtype_out))
         
-        return train_set, test_set
+        return train_set, validation_set, test_set
 
     elif name == "creditcard":
         try:
@@ -389,7 +447,7 @@ def get_dataset(**kwargs) -> Tuple[TensorDataset, TensorDataset]:
         # Convert 'Class' from bytes to int (if necessary)
         df['Class'] = df['Class'].apply(lambda x: int(x.decode('utf-8')) if isinstance(x, bytes) else int(x))
         
-        X_train, X_test, y_train, y_test = preprocess(df, preprocess_config, 'Class')
+        X_train, X_test, y_train, y_test = preprocess(df, preprocess_config, 'Class', random_seed)
         
         train_set = TensorDataset(torch.tensor(X_train, dtype=dtype_in), torch.tensor(y_train, dtype=dtype_out))
         test_set = TensorDataset(torch.tensor(X_test, dtype=dtype_in), torch.tensor(y_test, dtype=dtype_out))
@@ -405,9 +463,16 @@ def get_dataset(**kwargs) -> Tuple[TensorDataset, TensorDataset]:
         # Convert 'signal' from bytes to int (if necessary)
         df['signal'] = df['signal'].apply(lambda x: int(x.decode('utf-8')) if isinstance(x, bytes) else int(x))
         
-        X_train, X_test, y_train, y_test = preprocess(df, preprocess_config, 'signal')
+        X_train, X_validation, X_test, y_train, y_validation, y_test = preprocess(
+            df,
+            preprocess_config,
+            'signal',
+            random_seed,
+            include_validation=True,
+        )
 
         train_set = TensorDataset(torch.tensor(X_train, dtype=dtype_in), torch.tensor(y_train, dtype=dtype_out))
+        validation_set = TensorDataset(torch.tensor(X_validation, dtype=dtype_in), torch.tensor(y_validation, dtype=dtype_out))
         test_set = TensorDataset(torch.tensor(X_test, dtype=dtype_in), torch.tensor(y_test, dtype=dtype_out))
         
         #Print some data information
@@ -419,7 +484,7 @@ def get_dataset(**kwargs) -> Tuple[TensorDataset, TensorDataset]:
         for cls, count, prop in zip(unique_classes, counts, proportions):
             print(f"Class {cls.item()}: Count = {count.item()}, Proportion = {prop.item():.2%}")
 
-        return train_set, test_set
+        return train_set, validation_set, test_set
 
     else:
         
@@ -441,12 +506,12 @@ if __name__ == "__main__":
     df = pd.concat([X, y], axis=1)
 
     dummy_param_bin = True
-    dummy_param_param = {'resample': 1, 'poly_features_degree': 2, 'scaler': 'Standard', "seed_split":42}
+    dummy_param_param = {'resample': 1, 'poly_features_degree': 2, 'scaler': 'Standard'}
     dtype_in = torch.float32
     dtype_out = torch.float32 if dummy_param_bin else torch.long
 
 
-    X_train, X_test, y_train, y_test = preprocess(df, dummy_param_param, 'Class')
+    X_train, X_test, y_train, y_test = preprocess(df, dummy_param_param, 'Class', random_seed=42)
     print(y_test[y_test == 1].sum() / len(y_test))
     print(type(y_train), y_train.shape, y_train[0:5])
     print(dtype_out)

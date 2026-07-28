@@ -1,7 +1,6 @@
 scaler: Standard
 resample: 1 #if 0<resample<1 then it is ratio to keep, else it needs to be an integer representing the number of sample to keep
 test_size : 0.2
-seed_split: 42
 
 poly_features_enabled: True
 poly_features_degree: 1

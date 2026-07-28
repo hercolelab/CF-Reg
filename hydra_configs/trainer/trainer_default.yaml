@@ -4,4 +4,5 @@ defaults:
 enable_progress_bar: False
 accelerator: gpu
 num_sanity_val_steps: 0
+inference_mode: False
 max_epochs: 200

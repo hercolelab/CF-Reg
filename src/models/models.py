@@ -3,23 +3,6 @@ from torch import nn, Tensor
 import torch.nn.functional as F
 from typing import *
 from src.utility.geometric import Sphere
-seed = 42
-
-
-
-
-
-torch.manual_seed(seed)
-
-# Additional steps to enforce determinism
-# Note: These settings can degrade performance and may not guarantee complete reproducibility across different PyTorch releases or different platforms like CPUs and GPUs.
-
-# Ensuring that all operations are deterministic on GPU (if using CUDA)
-if torch.cuda.is_available():
-    torch.cuda.manual_seed(seed)
-    torch.cuda.manual_seed_all(seed)  # for multi-GPU.
-    torch.backends.cudnn.deterministic = True
-    torch.backends.cudnn.benchmark = False
 
 class BLogisticRegression(nn.Module): 
     def __init__(self, **kwargs):

@@ -15,4 +15,5 @@ project: counterfactual_overfitting_experiments_new
 name: experiments
 version: 1
 seed: 42
+tuning: true
 device: cuda

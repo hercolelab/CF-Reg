@@ -1,6 +1,7 @@
 import torch
-from torch.utils.data import DataLoader
+from torch.utils.data import DataLoader, TensorDataset
 import numpy as np
+import random
 from typing import List, Tuple
 from src.estimator import MontecarloEstimator, SCFEEstimator
 from src.trainer import LightningClassifier
@@ -53,11 +54,11 @@ def main(cfg: DictConfig) -> None:
             merge_hydra_wandb(cfg, wandb.config)
             log_params(cfg)
             set_run_name(cfg, run)
-            #cfg.preprocessor['seed_split'] = cfg.seed
             # To increase performances on CUDA 
             torch.set_float32_matmul_precision('high')
             wandb_logger = WandbLogger(project=cfg.logger.project)
             
+            random.seed(cfg.seed)
             np.random.seed(cfg.seed) 
             torch.manual_seed(cfg.seed)
             if torch.cuda.is_available():
@@ -68,13 +69,26 @@ def main(cfg: DictConfig) -> None:
             print(cfg)
             print("cfg.seed: ", cfg.seed)
             
-            trainset, testset = get_dataset(name = cfg.data.name, binary = cfg.loss.binary, preprocess_config = OmegaConf.to_container(cfg.preprocessor)) 
+            trainset, validationset, testset = get_dataset(
+                name=cfg.data.name,
+                binary=cfg.loss.binary,
+                preprocess_config=OmegaConf.to_container(cfg.preprocessor),
+                seed=cfg.seed,
+            )
+
+            if cfg.tuning:
+                fit_set = trainset
+            else:
+                fit_set = TensorDataset(
+                    *(
+                        torch.cat((train_tensor, validation_tensor), dim=0)
+                        for train_tensor, validation_tensor in zip(trainset.tensors, validationset.tensors)
+                    )
+                )
 
             # TODO These preprocessing steps should ideally be refactored into get_dataset().
-            from torch.utils.data import TensorDataset
-            # Extract the tensors from the trainset and testset
+            # Extract the tensors from the training set
             train_data, train_targets = trainset[:][0], trainset[:][1]
-            test_data, test_targets = testset[:][0], testset[:][1]
             print("train_data.shape: ", train_data.shape)
             # Apply PolynomialFeatures to the dataset
             #poly = PolynomialFeatures(degree=cfg.data.poly_degree)
@@ -92,10 +106,10 @@ def main(cfg: DictConfig) -> None:
 
 
             model = get_model(config=OmegaConf.to_container(cfg.model) | {"input_dim": train_data.shape, "nclasses": cfg.data.nclasses, "channel_in": cfg.data.channel_in})
-            estimator = get_estimator(**(OmegaConf.to_container(cfg.estimator) | {"function" : model, "train_set" : trainset}))
+            estimator = get_estimator(**(OmegaConf.to_container(cfg.estimator) | {"function" : model, "train_set" : fit_set}))
             print("type(estimator): ", type(estimator))
 
-            criterion = get_loss(**(OmegaConf.to_container(cfg.loss) | {"function" : model, "train_set" : trainset}))
+            criterion = get_loss(**(OmegaConf.to_container(cfg.loss) | {"function" : model, "train_set" : fit_set}))
             evaluator = ClassifierEvaluator(classes=cfg.data.nclasses)
             
             clf =  LightningClassifier(model=model, 
@@ -106,8 +120,11 @@ def main(cfg: DictConfig) -> None:
                                        counterfactual=is_counterfactual(cfg),
                                         margin = False)
                 
-            train_loader = DataLoader(trainset, **cfg.loader)
-            test_loader = DataLoader(testset, **cfg.loader)
+            evaluation_loader_config = OmegaConf.to_container(cfg.loader)
+            evaluation_loader_config["shuffle"] = False
+            train_loader = DataLoader(fit_set, **cfg.loader)
+            validation_loader = DataLoader(validationset, **evaluation_loader_config)
+            test_loader = DataLoader(testset, **evaluation_loader_config)
             
             wandb_logger.watch(model, log='gradients', log_freq=100)
  
@@ -116,9 +133,13 @@ def main(cfg: DictConfig) -> None:
             callbacks = cfg.trainer.callbacks
             trainer_cfg = {k: v for k, v in cfg.trainer.items() if k != "callbacks"}
 
-            callbacks = get_callbacks(**callbacks)
+            callbacks = get_callbacks(**callbacks) if cfg.tuning else None
             trainer = pl.Trainer(**trainer_cfg, callbacks=callbacks, logger=wandb_logger)
-            trainer.fit(clf, train_loader, test_loader)
+            if cfg.tuning:
+                trainer.fit(clf, train_loader, validation_loader)
+            else:
+                trainer.fit(clf, train_loader)
+                trainer.test(clf, dataloaders=test_loader, ckpt_path=None)
     
     
     if cfg.run_mode == 'sweep':
