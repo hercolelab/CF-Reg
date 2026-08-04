@@ -1,0 +1,32 @@
+method: bayes
+name: 12_tuning_water_mlpb_scfe
+metric:
+  goal: maximize
+  name: validation/accuracy
+parameters:
+  tuning:
+    value: true
+  data.name:
+    value: water
+  preprocessor.poly_features_degree:
+    value: 6
+  trainer.max_epochs:
+    value: 2000
+  model.model_type:
+    value: BMLP
+  model.hidden_layers:
+    value: [150, 1000, 150, 30]
+  model.dropout:
+    value: 0.0
+  loss.type:
+    value: scfe_regularization
+  loss.alpha:
+    distribution: uniform
+    min: -1.0
+    max: -0.01
+  estimator.type:
+    value: scfe
+  estimator.reg_coef.value:
+    distribution: uniform
+    min: 0.1
+    max: 2.3

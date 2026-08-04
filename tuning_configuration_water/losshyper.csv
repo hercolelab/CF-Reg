@@ -1,0 +1,10 @@
+id, data, preprocessing.poly_features_degree, trainer_default.max_epochs, model, model.hidden_layers, loss, loss.alpha_range, estimator, estimator.reg_coef.value_range
+01_tuning_water_lr_l1, water, 6, 2000, logisticregression, , l1normal, [0.000001, 1], , ,
+02_tuning_water_lr_l2, water, 6, 2000, logisticregression, , l2normal, [0.000001, 1], , ,
+03_tuning_water_lr_scfe, water, 6, 2000, logisticregression, , scfe_regularization, [-1.0, -0.01], scfe, [0.1, 2.3],
+05_tuning_water_mlps_l1, water, 6, 2000, bmlp, [100, 30], l1normal, [0.000001, 1], , ,
+06_tuning_water_mlps_l2, water, 6, 2000, bmlp, [100, 30], l2normal, [0.000001, 1], , ,
+07_tuning_water_mlps_scfe, water, 6, 2000, bmlp, [100, 30], scfe_regularization, [-1.0, -0.01], scfe, [0.1, 2.3],
+10_tuning_water_mlpb_l1, water, 6, 2000, bmlp, [150,1000,150, 30], l1normal, [0.000001, 1], , ,
+11_tuning_water_mlpb_l2, water, 6, 2000, bmlp, [150,1000,150, 30], l2normal, [0.000001, 1], , ,
+12_tuning_water_mlpb_scfe, water, 6, 2000, bmlp, [150,1000,150, 30], scfe_regularization, [-1.0, -0.01], scfe, [0.1, 2.3],
