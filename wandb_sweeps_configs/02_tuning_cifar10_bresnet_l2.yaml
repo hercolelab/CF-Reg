@@ -1,0 +1,20 @@
+method: bayes
+name: 02_tuning_cifar10_bresnet_l2
+metric:
+  goal: maximize
+  name: validation/accuracy
+parameters:
+  tuning:
+    value: true
+  data.name:
+    value: cifar10
+  trainer.max_epochs:
+    value: 200
+  model.model_type:
+    value: BPreActResNet
+  loss.type:
+    value: l2normal
+  loss.alpha:
+    distribution: uniform
+    min: 0.000001
+    max: 1.0

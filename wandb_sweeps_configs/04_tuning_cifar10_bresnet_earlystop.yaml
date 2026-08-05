@@ -1,0 +1,54 @@
+method: grid
+name: 04_tuning_cifar10_bresnet_earlystop
+metric:
+  goal: maximize
+  name: validation/accuracy
+parameters:
+  tuning:
+    value: true
+  data.name:
+    value: cifar10
+  trainer.max_epochs:
+    value: 200
+  model.model_type:
+    value: BPreActResNet
+  loss.type:
+    value: normal
+  trainer.callbacks:
+    values:
+      - {early_stop_enable: true, patience: 5}
+      - {early_stop_enable: true, patience: 10}
+      - {early_stop_enable: true, patience: 15}
+      - {early_stop_enable: true, patience: 20}
+      - {early_stop_enable: true, patience: 25}
+      - {early_stop_enable: true, patience: 30}
+      - {early_stop_enable: true, patience: 35}
+      - {early_stop_enable: true, patience: 40}
+      - {early_stop_enable: true, patience: 45}
+      - {early_stop_enable: true, patience: 50}
+      - {early_stop_enable: true, patience: 55}
+      - {early_stop_enable: true, patience: 60}
+      - {early_stop_enable: true, patience: 65}
+      - {early_stop_enable: true, patience: 70}
+      - {early_stop_enable: true, patience: 75}
+      - {early_stop_enable: true, patience: 80}
+      - {early_stop_enable: true, patience: 85}
+      - {early_stop_enable: true, patience: 90}
+      - {early_stop_enable: true, patience: 95}
+      - {early_stop_enable: true, patience: 100}
+      - {early_stop_enable: true, patience: 105}
+      - {early_stop_enable: true, patience: 110}
+      - {early_stop_enable: true, patience: 115}
+      - {early_stop_enable: true, patience: 120}
+      - {early_stop_enable: true, patience: 125}
+      - {early_stop_enable: true, patience: 130}
+      - {early_stop_enable: true, patience: 135}
+      - {early_stop_enable: true, patience: 140}
+      - {early_stop_enable: true, patience: 145}
+      - {early_stop_enable: true, patience: 150}
+      - {early_stop_enable: true, patience: 155}
+      - {early_stop_enable: true, patience: 160}
+      - {early_stop_enable: true, patience: 165}
+      - {early_stop_enable: true, patience: 170}
+      - {early_stop_enable: true, patience: 175}
+      - {early_stop_enable: true, patience: 180}

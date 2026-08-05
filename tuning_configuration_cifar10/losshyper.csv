@@ -1,0 +1,4 @@
+id, data, preprocessing.poly_features_degree, trainer_default.max_epochs, model, model.hidden_layers, loss, loss.alpha_range, estimator, estimator.reg_coef.value_range
+01_tuning_cifar10_bresnet_l1, cifar10, , 200, bpreactresnet, , l1normal, [0.000001, 1], , ,
+02_tuning_cifar10_bresnet_l2, cifar10, , 200, bpreactresnet, , l2normal, [0.000001, 1], , ,
+03_tuning_cifar10_bresnet_scfe, cifar10, , 200, bpreactresnet, , scfe_regularization, [-1.0, -0.01], scfe, [0.1, 2.3],
