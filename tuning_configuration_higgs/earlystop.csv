@@ -1,0 +1,3 @@
+id, data, preprocessing.poly_features_degree, trainer_default.max_epochs, model, model.hidden_layers, loss, trainer.callbacks.early_stop_enable, trainer.callbacks.patience_start, trainer.callbacks.patience_end, trainer.callbacks.patience_step
+04_tuning_higgs_mlps_earlystop, higgs_reduced, 1, 200, bmlp, [100, 30], normal, True, 5, 180, 5
+09_tuning_higgs_mlpb_earlystop, higgs_reduced, 1, 200, bmlp, [150,1000,150, 30], normal, True, 5, 180, 5

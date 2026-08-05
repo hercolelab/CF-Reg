@@ -1,0 +1,26 @@
+method: bayes
+name: 01_tuning_higgs_mlps_l1
+metric:
+  goal: maximize
+  name: validation/accuracy
+parameters:
+  tuning:
+    value: true
+  data.name:
+    value: higgs_reduced
+  preprocessor.poly_features_degree:
+    value: 1
+  trainer.max_epochs:
+    value: 200
+  model.model_type:
+    value: BMLP
+  model.hidden_layers:
+    value: [100, 30]
+  model.dropout:
+    value: 0.0
+  loss.type:
+    value: l1normal
+  loss.alpha:
+    distribution: uniform
+    min: 0.000001
+    max: 1.0
