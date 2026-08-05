@@ -1,0 +1,3 @@
+id, data, preprocessing.poly_features_degree, trainer_default.max_epochs, model, model.hidden_layers, loss, model.dropout_range
+09_tuning_phomene_mlps_dropout, phomene, 1, 2000, bmlp, [100, 30], normal, [0.0,0.9]
+14_tuning_phomene_mlpb_dropout, phomene, 1, 2000, bmlp, [150,1000,150, 30], normal, [0.0,0.9]

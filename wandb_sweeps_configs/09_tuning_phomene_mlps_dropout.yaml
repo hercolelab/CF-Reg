@@ -1,0 +1,24 @@
+method: bayes
+name: 09_tuning_phomene_mlps_dropout
+metric:
+  goal: maximize
+  name: validation/accuracy
+parameters:
+  tuning:
+    value: true
+  data.name:
+    value: phomene
+  preprocessor.poly_features_degree:
+    value: 1
+  trainer.max_epochs:
+    value: 2000
+  model.model_type:
+    value: BMLP
+  model.hidden_layers:
+    value: [100, 30]
+  model.dropout:
+    distribution: uniform
+    min: 0.0
+    max: 0.9
+  loss.type:
+    value: normal

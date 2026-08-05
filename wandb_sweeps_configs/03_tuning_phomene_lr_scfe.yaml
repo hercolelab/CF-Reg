@@ -1,0 +1,28 @@
+method: bayes
+name: 03_tuning_phomene_lr_scfe
+metric:
+  goal: maximize
+  name: validation/accuracy
+parameters:
+  tuning:
+    value: true
+  data.name:
+    value: phomene
+  preprocessor.poly_features_degree:
+    value: 11
+  trainer.max_epochs:
+    value: 2000
+  model.model_type:
+    value: LogisticRegression
+  loss.type:
+    value: scfe_regularization
+  loss.alpha:
+    distribution: uniform
+    min: -1.0
+    max: -0.01
+  estimator.type:
+    value: scfe
+  estimator.reg_coef.value:
+    distribution: uniform
+    min: 0.1
+    max: 2.3

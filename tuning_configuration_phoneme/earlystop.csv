@@ -1,0 +1,4 @@
+id, data, preprocessing.poly_features_degree, trainer_default.max_epochs, model, model.hidden_layers, loss, trainer.callbacks.early_stop_enable, trainer.callbacks.patience_start, trainer.callbacks.patience_end, trainer.callbacks.patience_step
+04_tuning_phomene_lr_earlystop, phomene, 11, 2000, logisticregression, , normal, True, 5, 300, 5
+08_tuning_phomene_mlps_earlystop, phomene, 1, 2000, bmlp, [100, 30], normal, True, 5, 300, 5
+13_tuning_phomene_mlpb_earlystop, phomene, 1, 2000, bmlp, [150,1000,150, 30], normal, True, 5, 300, 5
