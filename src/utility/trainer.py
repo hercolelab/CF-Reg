@@ -26,7 +26,7 @@ def get_callbacks(
     mode: str = 'min'
     ):
 
-    from pytorch_lightning.callbacks.early_stopping import EarlyStopping
+    from pytorch_lightning.callbacks import EarlyStopping, ModelCheckpoint
     callbacks = []
     
     if early_stop_enable:
@@ -37,7 +37,13 @@ def get_callbacks(
             verbose=verbose,
             mode=mode
         )
-        callbacks.append(early_stop)
+        best_checkpoint = ModelCheckpoint(
+            monitor=monitor,
+            mode=mode,
+            save_top_k=1,
+            save_on_train_epoch_end=False,
+        )
+        callbacks.extend((early_stop, best_checkpoint))
     
     return callbacks if len(callbacks) > 0 else None
     

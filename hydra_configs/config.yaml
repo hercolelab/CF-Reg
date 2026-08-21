@@ -15,5 +15,8 @@ project: counterfactual_overfitting_experiments_new
 name: experiments
 version: 1
 seed: 42
+# true: fit on train, validate on validation, and do not evaluate test.
+# false: normally fit on train + validation, then evaluate the holdout test.
+# false + early stopping: fit on train, validate, then test the best checkpoint.
 tuning: true
 device: cuda

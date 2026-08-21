@@ -1,8 +1,8 @@
 import torch
-from torch.utils.data import DataLoader, TensorDataset
+from torch.utils.data import DataLoader, Dataset, TensorDataset
 import numpy as np
 import random
-from typing import List, Tuple
+from typing import Any, Mapping
 from src.estimator import MontecarloEstimator, SCFEEstimator
 from src.trainer import LightningClassifier
 from src.utility import get_dataset, get_model, get_loss, get_estimator, merge_hydra_wandb, ClassifierEvaluator, read_yaml, get_callbacks
@@ -16,6 +16,76 @@ from src.utility.utils import flatten_dict
 from sklearn.preprocessing import PolynomialFeatures
 
 disable_possible_user_warnings()
+
+
+def merge_train_validation_sets(
+    train_set: TensorDataset,
+    validation_set: TensorDataset,
+) -> TensorDataset:
+    """Return the final-training set without including any holdout samples."""
+
+    if len(train_set.tensors) != len(validation_set.tensors):
+        raise ValueError("Training and validation sets must contain the same number of tensors")
+
+    return TensorDataset(
+        *(
+            torch.cat((train_tensor, validation_tensor), dim=0)
+            for train_tensor, validation_tensor in zip(
+                train_set.tensors,
+                validation_set.tensors,
+            )
+        )
+    )
+
+
+def select_datasets_for_mode(
+    train_set: TensorDataset,
+    validation_set: TensorDataset,
+    test_set: Dataset,
+    tuning: bool,
+    early_stopping_enabled: bool,
+) -> tuple[TensorDataset, Dataset | None]:
+    """Select exactly the datasets allowed by the requested execution mode."""
+
+    if tuning or early_stopping_enabled:
+        return train_set, None if tuning else test_set
+
+    return merge_train_validation_sets(train_set, validation_set), test_set
+
+
+def fit_and_evaluate(
+    trainer: Any,
+    classifier: LightningClassifier,
+    fit_set: Dataset,
+    validation_set: Dataset,
+    test_set: Dataset | None,
+    loader_config: Mapping[str, Any],
+    tuning: bool,
+    early_stopping_enabled: bool,
+) -> None:
+    """Run either tuning (train/validation) or final fit/test evaluation."""
+
+    if not tuning and test_set is None:
+        raise ValueError("A holdout test set is required when tuning is disabled")
+
+    use_validation = tuning or early_stopping_enabled
+    train_loader = DataLoader(fit_set, **dict(loader_config))
+    evaluation_loader_config = dict(loader_config)
+    evaluation_loader_config["shuffle"] = False
+
+    if use_validation:
+        validation_loader = DataLoader(validation_set, **evaluation_loader_config)
+        trainer.fit(classifier, train_loader, validation_loader)
+    else:
+        trainer.fit(classifier, train_loader)
+
+    if tuning:
+        return
+
+    test_loader = DataLoader(test_set, **evaluation_loader_config)
+    checkpoint = "best" if early_stopping_enabled else None
+    trainer.test(classifier, dataloaders=test_loader, ckpt_path=checkpoint)
+
 
 def log_params(cfg: DictConfig) -> None:
     
@@ -69,6 +139,11 @@ def main(cfg: DictConfig) -> None:
             print(cfg)
             print("cfg.seed: ", cfg.seed)
             
+            callback_config = OmegaConf.to_container(cfg.trainer.callbacks) or {}
+            early_stopping_enabled = bool(
+                callback_config.get("early_stop_enable", False)
+            )
+
             trainset, validationset, testset = get_dataset(
                 name=cfg.data.name,
                 binary=cfg.loss.binary,
@@ -76,15 +151,13 @@ def main(cfg: DictConfig) -> None:
                 seed=cfg.seed,
             )
 
-            if cfg.tuning:
-                fit_set = trainset
-            else:
-                fit_set = TensorDataset(
-                    *(
-                        torch.cat((train_tensor, validation_tensor), dim=0)
-                        for train_tensor, validation_tensor in zip(trainset.tensors, validationset.tensors)
-                    )
-                )
+            fit_set, holdout_testset = select_datasets_for_mode(
+                train_set=trainset,
+                validation_set=validationset,
+                test_set=testset,
+                tuning=cfg.tuning,
+                early_stopping_enabled=early_stopping_enabled,
+            )
 
             # TODO These preprocessing steps should ideally be refactored into get_dataset().
             # Extract the tensors from the training set
@@ -120,26 +193,24 @@ def main(cfg: DictConfig) -> None:
                                        counterfactual=is_counterfactual(cfg),
                                         margin = False)
                 
-            evaluation_loader_config = OmegaConf.to_container(cfg.loader)
-            evaluation_loader_config["shuffle"] = False
-            train_loader = DataLoader(fit_set, **cfg.loader)
-            validation_loader = DataLoader(validationset, **evaluation_loader_config)
-            test_loader = DataLoader(testset, **evaluation_loader_config)
-            
             wandb_logger.watch(model, log='gradients', log_freq=100)
  
 
             
-            callbacks = cfg.trainer.callbacks
             trainer_cfg = {k: v for k, v in cfg.trainer.items() if k != "callbacks"}
 
-            callbacks = get_callbacks(**callbacks) if cfg.tuning else None
+            callbacks = get_callbacks(**callback_config)
             trainer = pl.Trainer(**trainer_cfg, callbacks=callbacks, logger=wandb_logger)
-            if cfg.tuning:
-                trainer.fit(clf, train_loader, validation_loader)
-            else:
-                trainer.fit(clf, train_loader)
-                trainer.test(clf, dataloaders=test_loader, ckpt_path=None)
+            fit_and_evaluate(
+                trainer=trainer,
+                classifier=clf,
+                fit_set=fit_set,
+                validation_set=validationset,
+                test_set=holdout_testset,
+                loader_config=OmegaConf.to_container(cfg.loader),
+                tuning=cfg.tuning,
+                early_stopping_enabled=early_stopping_enabled,
+            )
     
     
     if cfg.run_mode == 'sweep':

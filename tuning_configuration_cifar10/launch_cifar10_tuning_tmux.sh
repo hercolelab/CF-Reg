@@ -7,20 +7,10 @@ PROJECT_ROOT="$(cd -- "$SCRIPT_DIR/.." && pwd)"
 CONFIG_DIR="$PROJECT_ROOT/wandb_sweeps_configs"
 
 CONFIGS=(
-    "01_tuning_water_lr_l1.yaml"
-    "02_tuning_water_lr_l2.yaml"
-    "03_tuning_water_lr_scfe.yaml"
-    "04_tuning_water_lr_earlystop.yaml"
-    "05_tuning_water_mlps_l1.yaml"
-    "06_tuning_water_mlps_l2.yaml"
-    "07_tuning_water_mlps_scfe.yaml"
-    "08_tuning_water_mlps_earlystop.yaml"
-    "09_tuning_water_mlps_dropout.yaml"
-    "10_tuning_water_mlpb_l1.yaml"
-    "11_tuning_water_mlpb_l2.yaml"
-    "12_tuning_water_mlpb_scfe.yaml"
-    "13_tuning_water_mlpb_earlystop.yaml"
-    "14_tuning_water_mlpb_dropout.yaml"
+    "01_tuning_cifar10_bresnet_l1.yaml"
+    "02_tuning_cifar10_bresnet_l2.yaml"
+    "03_tuning_cifar10_bresnet_scfe.yaml"
+    "04_tuning_cifar10_bresnet_earlystop.yaml"
 )
 
 if ! command -v tmux >/dev/null 2>&1; then
