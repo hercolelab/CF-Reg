@@ -1,0 +1,186 @@
+method: grid
+name: best_water_mlps_scfe_configurations
+metric:
+  goal: maximize
+  name: test/accuracy
+parameters:
+  tuning:
+    value: false
+  data.name:
+    value: water
+  preprocessor.poly_features_degree:
+    value: 1
+  trainer.max_epochs:
+    value: 2000
+  model.model_type:
+    value: BMLP
+  model.hidden_layers:
+    value: [100, 30]
+  model.dropout:
+    value: 0.0
+  loss.type:
+    value: scfe_regularization
+  estimator.type:
+    value: scfe
+  configuration:
+    values:
+      - loss:
+          alpha: -0.7398071897467149
+        estimator:
+          reg_coef:
+            value: 2.222240696062091
+      - loss:
+          alpha: -0.4370117425154898
+        estimator:
+          reg_coef:
+            value: 1.4621357004787068
+      - loss:
+          alpha: -0.5252554798147797
+        estimator:
+          reg_coef:
+            value: 1.6095224304413325
+      - loss:
+          alpha: -0.3067923771246186
+        estimator:
+          reg_coef:
+            value: 0.8100765793711359
+      - loss:
+          alpha: -0.729637122196266
+        estimator:
+          reg_coef:
+            value: 1.614978729955914
+      - loss:
+          alpha: -0.11497459267318376
+        estimator:
+          reg_coef:
+            value: 1.7735149051106345
+      - loss:
+          alpha: -0.4525217139214573
+        estimator:
+          reg_coef:
+            value: 1.4651928704391597
+      - loss:
+          alpha: -0.1837962134201383
+        estimator:
+          reg_coef:
+            value: 1.2010064820228803
+      - loss:
+          alpha: -0.29832005269387163
+        estimator:
+          reg_coef:
+            value: 2.1973940306646003
+      - loss:
+          alpha: -0.5226816841775244
+        estimator:
+          reg_coef:
+            value: 2.120481642061452
+      - loss:
+          alpha: -0.9185401123038665
+        estimator:
+          reg_coef:
+            value: 2.219513221865417
+      - loss:
+          alpha: -0.28155508537901663
+        estimator:
+          reg_coef:
+            value: 0.8467709127911491
+      - loss:
+          alpha: -0.1972748132399537
+        estimator:
+          reg_coef:
+            value: 1.3337915504195974
+      - loss:
+          alpha: -0.8595757610292067
+        estimator:
+          reg_coef:
+            value: 1.9868336935541908
+      - loss:
+          alpha: -0.14249445967557162
+        estimator:
+          reg_coef:
+            value: 0.9370072961588044
+      - loss:
+          alpha: -0.8542234000511857
+        estimator:
+          reg_coef:
+            value: 2.1756652214403887
+      - loss:
+          alpha: -0.527505510372952
+        estimator:
+          reg_coef:
+            value: 0.9765886391459754
+      - loss:
+          alpha: -0.5622101999890194
+        estimator:
+          reg_coef:
+            value: 1.4334150734180873
+      - loss:
+          alpha: -0.6937777719335969
+        estimator:
+          reg_coef:
+            value: 2.2072129982584263
+      - loss:
+          alpha: -0.5363596907448944
+        estimator:
+          reg_coef:
+            value: 1.2311607506717208
+      - loss:
+          alpha: -0.39194907969727166
+        estimator:
+          reg_coef:
+            value: 0.6009186544687761
+      - loss:
+          alpha: -0.1507515712124895
+        estimator:
+          reg_coef:
+            value: 1.255744951980068
+      - loss:
+          alpha: -0.7506630185368549
+        estimator:
+          reg_coef:
+            value: 2.0331619466136206
+      - loss:
+          alpha: -0.7888188435721366
+        estimator:
+          reg_coef:
+            value: 2.09466773978869
+      - loss:
+          alpha: -0.1394983030668394
+        estimator:
+          reg_coef:
+            value: 1.3825094900263355
+      - loss:
+          alpha: -0.08601278911740484
+        estimator:
+          reg_coef:
+            value: 0.1657834237261982
+      - loss:
+          alpha: -0.8104338405641107
+        estimator:
+          reg_coef:
+            value: 1.919181868869983
+      - loss:
+          alpha: -0.5891724585398402
+        estimator:
+          reg_coef:
+            value: 2.1421196289164177
+      - loss:
+          alpha: -0.05324826951968531
+        estimator:
+          reg_coef:
+            value: 0.625004729430736
+      - loss:
+          alpha: -0.8813073736418809
+        estimator:
+          reg_coef:
+            value: 2.0657376221566346
+      - loss:
+          alpha: -0.04908726544671427
+        estimator:
+          reg_coef:
+            value: 1.3828727405490115
+      - loss:
+          alpha: -0.629629299888468
+        estimator:
+          reg_coef:
+            value: 1.140027750287376

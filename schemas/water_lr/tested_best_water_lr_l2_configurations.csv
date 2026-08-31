@@ -1,0 +1,3 @@
+sweep_id,dataset,preprocessor_poly_features_degree,model,loss,id,validation_accuracy,parameter_1_name,parameter_1_value,test_accuracy
+80oa8pqi,water,6,logisticregression,l2normal,1,0.7099236845970154,loss_alpha,0.16371521649213264,0.6356707215309143
+80oa8pqi,water,6,logisticregression,l2normal,2,0.7083969712257385,loss_alpha,0.3262093128413681,0.6295731663703918

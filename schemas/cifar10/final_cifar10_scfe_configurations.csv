@@ -1,0 +1,5 @@
+sweep_id,dataset,model,loss,id,validation_accuracy,parameter_1_name,parameter_1_value,parameter_2_name,parameter_2_value,test_accuracy
+9u913qxq,cifar10,BPreActResNet,scfe_regularization,4,0.8169999718666077,loss_alpha,-0.012951485379652404,estimator_reg_coef_value,1.9853739019253296,0.8330000042915344
+9u913qxq,cifar10,BPreActResNet,scfe_regularization,21,0.8044999837875366,loss_alpha,-0.014503015968240218,estimator_reg_coef_value,1.3228085379808383,0.8299999833106995
+9u913qxq,cifar10,BPreActResNet,scfe_regularization,17,0.8084999918937683,loss_alpha,-0.015141935209222912,estimator_reg_coef_value,2.249961790476475,0.828000009059906
+9u913qxq,cifar10,BPreActResNet,scfe_regularization,5,0.8169999718666077,loss_alpha,-0.015290741333181646,estimator_reg_coef_value,1.7216031290050835,0.8245000243186951

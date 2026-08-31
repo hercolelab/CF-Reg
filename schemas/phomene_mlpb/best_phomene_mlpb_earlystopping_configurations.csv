@@ -1,0 +1,3 @@
+sweep_id,dataset,model,model_hidden_layers,loss,id,validation_accuracy,parameter_1_name,parameter_1_value,parameter_2_name,parameter_2_value
+k1zpgcc5,phomene,bmlp,"[150, 1000, 150, 30]",normal,1,0.8973172903060913,trainer_callbacks_early_stop_enable,True,trainer_callbacks_patience,210
+k1zpgcc5,phomene,bmlp,"[150, 1000, 150, 30]",normal,2,0.8963922262191772,trainer_callbacks_early_stop_enable,True,trainer_callbacks_patience,160

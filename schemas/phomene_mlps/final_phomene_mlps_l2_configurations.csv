@@ -1,0 +1,2 @@
+sweep_id,dataset,model,model_hidden_layers,loss,id,validation_accuracy,parameter_1_name,parameter_1_value,test_accuracy
+si95e1pn,phomene,bmlp,"[100,30]",l2normal,2,0.8852913975715637,loss_alpha,0.00014809202317603347,0.870490312576294

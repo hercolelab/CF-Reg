@@ -1,0 +1,5 @@
+sweep_id,dataset,model,model_hidden_layers,loss,id,validation_accuracy,parameter_1_name,parameter_1_value,parameter_2_name,parameter_2_value,test_accuracy
+oyfp182c,higgs_reduced,bmlp,"[150, 1000, 150, 30]",scfe_regularization,4,0.7215999960899353,loss_alpha,-0.4391350132941281,estimator_reg_coef_value,2.0314145986009193,0.7324249744415283
+oyfp182c,higgs_reduced,bmlp,"[150, 1000, 150, 30]",scfe_regularization,19,0.7202500104904175,loss_alpha,-0.32754966875640457,estimator_reg_coef_value,1.192552897100892,0.7323750257492065
+oyfp182c,higgs_reduced,bmlp,"[150, 1000, 150, 30]",scfe_regularization,30,0.7196249961853027,loss_alpha,-0.4791022352136365,estimator_reg_coef_value,2.0526669607488333,0.7320749759674072
+oyfp182c,higgs_reduced,bmlp,"[150, 1000, 150, 30]",scfe_regularization,16,0.7203750014305115,loss_alpha,-0.4663314627662723,estimator_reg_coef_value,1.829130638972415,0.7319999933242798

@@ -1,0 +1,5 @@
+sweep_id,dataset,model,model_hidden_layers,loss,id,validation_accuracy,parameter_1_name,parameter_1_value,parameter_2_name,parameter_2_value,test_accuracy
+04nwdiz7,water,bmlp,"[150, 1000, 150, 30]",scfe_regularization,3,0.6900763511657715,loss_alpha,-0.8321240201635872,estimator_reg_coef_value,1.8832497162496304,0.6600610017776489
+04nwdiz7,water,bmlp,"[150, 1000, 150, 30]",scfe_regularization,9,0.6809160113334656,loss_alpha,-0.3821159613328282,estimator_reg_coef_value,0.3024755164106264,0.6524389982223511
+04nwdiz7,water,bmlp,"[150, 1000, 150, 30]",scfe_regularization,1,0.6916030645370483,loss_alpha,-0.703783906863342,estimator_reg_coef_value,0.956063340334268,0.6478658318519592
+04nwdiz7,water,bmlp,"[150, 1000, 150, 30]",scfe_regularization,16,0.6778625845909119,loss_alpha,-0.8662118539744612,estimator_reg_coef_value,2.2566522439509953,0.6478658318519592

@@ -1,0 +1,3 @@
+sweep_id,dataset,preprocessor_poly_features_degree,model,loss,id,validation_accuracy,parameter_1_name,parameter_1_value,parameter_2_name,parameter_2_value,test_accuracy
+xqlmvrbk,water,6,logisticregression,normal,1,0.6961832046508789,trainer_callbacks_early_stop_enable,True,trainer_callbacks_patience,35,0.6295731663703918
+xqlmvrbk,water,6,logisticregression,normal,2,0.6931297779083252,trainer_callbacks_early_stop_enable,True,trainer_callbacks_patience,20,0.6295731663703918

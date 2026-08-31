@@ -1,0 +1,20 @@
+method: grid
+name: best_cifar10_l2_configurations
+metric:
+  goal: maximize
+  name: test/accuracy
+parameters:
+  tuning:
+    value: false
+  data.name:
+    value: cifar10
+  trainer.max_epochs:
+    value: 200
+  model.model_type:
+    value: BPreActResNet
+  loss.type:
+    value: l2normal
+  loss.alpha:
+    values:
+      - 0.4329396860539067
+      - 0.8870117249775085

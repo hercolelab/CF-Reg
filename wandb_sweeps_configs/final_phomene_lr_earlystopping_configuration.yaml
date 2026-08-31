@@ -1,0 +1,29 @@
+method: grid
+name: final_phomene_lr_earlystopping_configuration
+metric:
+  goal: maximize
+  name: test/accuracy
+parameters:
+  seed:
+    values:
+    - 42
+    - 43
+    - 44
+    - 45
+    - 46
+  tuning:
+    value: false
+  data.name:
+    value: phomene
+  preprocessor.poly_features_degree:
+    value: 11
+  trainer.max_epochs:
+    value: 2000
+  model.model_type:
+    value: LogisticRegression
+  loss.type:
+    value: normal
+  trainer.callbacks.early_stop_enable:
+    value: true
+  trainer.callbacks.patience:
+    value: 295

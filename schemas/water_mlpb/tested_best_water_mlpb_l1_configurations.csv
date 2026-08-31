@@ -1,0 +1,3 @@
+sweep_id,dataset,model,model_hidden_layers,loss,id,validation_accuracy,parameter_1_name,parameter_1_value,test_accuracy
+6trnwn0h,water,bmlp,"[150, 1000, 150, 30]",l1normal,1,0.6106870174407959,loss_alpha,0.7213694494851657,0.6097561120986938
+6trnwn0h,water,bmlp,"[150, 1000, 150, 30]",l1normal,2,0.6106870174407959,loss_alpha,0.9762154309817168,0.6097561120986938

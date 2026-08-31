@@ -1,0 +1,3 @@
+sweep_id,dataset,preprocessor_poly_features_degree,model,loss,id,validation_accuracy,parameter_1_name,parameter_1_value,parameter_2_name,parameter_2_value,test_accuracy
+ieuz2erc,phomene,11,logisticregression,normal,1,0.8436632752418518,trainer_callbacks_early_stop_enable,True,trainer_callbacks_patience,285,0.7779833674430847
+ieuz2erc,phomene,11,logisticregression,normal,2,0.8418131470680237,trainer_callbacks_early_stop_enable,True,trainer_callbacks_patience,295,0.7779833674430847

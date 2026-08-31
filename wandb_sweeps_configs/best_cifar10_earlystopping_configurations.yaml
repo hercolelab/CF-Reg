@@ -1,0 +1,20 @@
+method: grid
+name: best_cifar10_earlystopping_configurations
+metric:
+  goal: maximize
+  name: test/accuracy
+parameters:
+  tuning:
+    value: false
+  data.name:
+    value: cifar10
+  trainer.max_epochs:
+    value: 200
+  model.model_type:
+    value: BPreActResNet
+  loss.type:
+    value: normal
+  trainer.callbacks:
+    values:
+      - {early_stop_enable: true, patience: 180}
+      - {early_stop_enable: true, patience: 155}

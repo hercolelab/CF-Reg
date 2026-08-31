@@ -1,0 +1,3 @@
+sweep_id,dataset,model,model_hidden_layers,loss,id,validation_accuracy,parameter_1_name,parameter_1_value,test_accuracy
+65gre2zw,higgs_reduced,bmlp,"[100,30]",l2normal,1,0.725849986076355,loss_alpha,0.00014191033206368094,0.7326250076293945
+65gre2zw,higgs_reduced,bmlp,"[100,30]",l2normal,2,0.7244750261306763,loss_alpha,0.0002051036769342058,0.731249988079071

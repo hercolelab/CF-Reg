@@ -1,0 +1,29 @@
+method: grid
+name: final_cifar10_scfe_configuration_3
+metric:
+  goal: maximize
+  name: test/accuracy
+parameters:
+  seed:
+    values:
+    - 42
+    - 43
+    - 44
+    - 45
+    - 46
+  tuning:
+    value: false
+  data.name:
+    value: cifar10
+  trainer.max_epochs:
+    value: 200
+  model.model_type:
+    value: BPreActResNet
+  loss.type:
+    value: scfe_regularization
+  loss.alpha:
+    value: -0.015141935209222912
+  estimator.type:
+    value: scfe
+  estimator.reg_coef.value:
+    value: 2.249961790476475

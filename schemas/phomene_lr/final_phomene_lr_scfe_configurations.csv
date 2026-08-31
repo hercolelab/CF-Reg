@@ -1,0 +1,5 @@
+sweep_id,dataset,preprocessor_poly_features_degree,model,loss,id,validation_accuracy,parameter_1_name,parameter_1_value,parameter_2_name,parameter_2_value,test_accuracy
+ka2fjwmh,phomene,11,logisticregression,scfe_regularization,31,0.7742830514907837,loss_alpha,-0.8207929218375885,estimator_reg_coef_value,1.6986002556186122,0.782608687877655
+ka2fjwmh,phomene,11,logisticregression,scfe_regularization,16,0.7742830514907837,loss_alpha,-0.8228031656044225,estimator_reg_coef_value,1.7204581496355524,0.781683623790741
+ka2fjwmh,phomene,11,logisticregression,scfe_regularization,26,0.7742830514907837,loss_alpha,-0.7704258276687488,estimator_reg_coef_value,1.6514918403710472,0.7807585597038269
+ka2fjwmh,phomene,11,logisticregression,scfe_regularization,8,0.7761332392692566,loss_alpha,-0.5995294462139076,estimator_reg_coef_value,1.063665533342538,0.7789084315299988

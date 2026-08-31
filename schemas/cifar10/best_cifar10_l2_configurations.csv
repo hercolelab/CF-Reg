@@ -1,0 +1,3 @@
+sweep_id,dataset,model,loss,id,validation_accuracy,parameter_1_name,parameter_1_value
+w7p3v1r9,cifar10,BPreActResNet,l2normal,1,0.5,loss_alpha,0.4329396860539067
+w7p3v1r9,cifar10,BPreActResNet,l2normal,2,0.5,loss_alpha,0.8870117249775085

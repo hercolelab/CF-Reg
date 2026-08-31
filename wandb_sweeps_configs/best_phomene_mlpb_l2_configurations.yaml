@@ -1,0 +1,26 @@
+method: grid
+name: best_phomene_mlpb_l2_configurations
+metric:
+  goal: maximize
+  name: test/accuracy
+parameters:
+  tuning:
+    value: false
+  data.name:
+    value: phomene
+  preprocessor.poly_features_degree:
+    value: 1
+  trainer.max_epochs:
+    value: 2000
+  model.model_type:
+    value: BMLP
+  model.hidden_layers:
+    value: [150, 1000, 150, 30]
+  model.dropout:
+    value: 0.0
+  loss.type:
+    value: l2normal
+  loss.alpha:
+    values:
+      - 0.1724851134992415
+      - 0.2442074723138747

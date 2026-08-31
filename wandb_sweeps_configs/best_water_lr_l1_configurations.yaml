@@ -1,0 +1,22 @@
+method: grid
+name: best_water_lr_l1_configurations
+metric:
+  goal: maximize
+  name: test/accuracy
+parameters:
+  tuning:
+    value: false
+  data.name:
+    value: water
+  preprocessor.poly_features_degree:
+    value: 6
+  trainer.max_epochs:
+    value: 2000
+  model.model_type:
+    value: LogisticRegression
+  loss.type:
+    value: l1normal
+  loss.alpha:
+    values:
+      - 0.00186345506377551
+      - 0.01113544154830313

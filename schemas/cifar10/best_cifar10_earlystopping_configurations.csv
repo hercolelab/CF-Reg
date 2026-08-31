@@ -1,0 +1,3 @@
+sweep_id,dataset,model,loss,id,validation_accuracy,parameter_1_name,parameter_1_value,parameter_2_name,parameter_2_value
+o5nzaph9,cifar10,BPreActResNet,normal,1,0.8420000076293945,trainer_callbacks_early_stop_enable,True,trainer_callbacks_patience,180
+o5nzaph9,cifar10,BPreActResNet,normal,2,0.8414999842643738,trainer_callbacks_early_stop_enable,True,trainer_callbacks_patience,155

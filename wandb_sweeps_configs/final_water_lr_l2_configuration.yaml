@@ -1,0 +1,27 @@
+method: grid
+name: final_water_lr_l2_configuration
+metric:
+  goal: maximize
+  name: test/accuracy
+parameters:
+  seed:
+    values:
+    - 42
+    - 43
+    - 44
+    - 45
+    - 46
+  tuning:
+    value: false
+  data.name:
+    value: water
+  preprocessor.poly_features_degree:
+    value: 6
+  trainer.max_epochs:
+    value: 2000
+  model.model_type:
+    value: LogisticRegression
+  loss.type:
+    value: l2normal
+  loss.alpha:
+    value: 0.3262093128413681

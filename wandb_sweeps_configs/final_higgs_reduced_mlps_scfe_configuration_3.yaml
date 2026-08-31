@@ -1,0 +1,37 @@
+method: grid
+name: final_higgs_reduced_mlps_scfe_configuration_3
+metric:
+  goal: maximize
+  name: test/accuracy
+parameters:
+  seed:
+    values:
+    - 42
+    - 43
+    - 44
+    - 45
+    - 46
+  tuning:
+    value: false
+  data.name:
+    value: higgs_reduced
+  preprocessor.poly_features_degree:
+    value: 1
+  trainer.max_epochs:
+    value: 200
+  model.model_type:
+    value: BMLP
+  model.hidden_layers:
+    value:
+    - 100
+    - 30
+  model.dropout:
+    value: 0.0
+  loss.type:
+    value: scfe_regularization
+  loss.alpha:
+    value: -0.10847374979699742
+  estimator.type:
+    value: scfe
+  estimator.reg_coef.value:
+    value: 1.0126369361997916

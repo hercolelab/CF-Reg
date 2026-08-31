@@ -1,0 +1,5 @@
+sweep_id,dataset,model,model_hidden_layers,loss,id,validation_accuracy,parameter_1_name,parameter_1_value,parameter_2_name,parameter_2_value,test_accuracy
+9qfrmkis,phomene,bmlp,"[100,30]",scfe_regularization,19,0.8834412693977356,loss_alpha,-0.1098277699024357,estimator_reg_coef_value,1.947113045334294,0.8843663334846497
+9qfrmkis,phomene,bmlp,"[100,30]",scfe_regularization,16,0.8834412693977356,loss_alpha,-0.10481018831581423,estimator_reg_coef_value,1.939125354607936,0.8825162053108215
+9qfrmkis,phomene,bmlp,"[100,30]",scfe_regularization,25,0.8825162053108215,loss_alpha,-0.03266068868266958,estimator_reg_coef_value,1.2463211214767385,0.8815911412239075
+9qfrmkis,phomene,bmlp,"[100,30]",scfe_regularization,8,0.8871415257453918,loss_alpha,-0.08371769155278819,estimator_reg_coef_value,1.2930491216420936,0.8797409534454346

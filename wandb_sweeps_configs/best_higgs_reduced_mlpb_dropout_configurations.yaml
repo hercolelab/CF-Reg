@@ -1,0 +1,24 @@
+method: grid
+name: best_higgs_reduced_mlpb_dropout_configurations
+metric:
+  goal: maximize
+  name: test/accuracy
+parameters:
+  tuning:
+    value: false
+  data.name:
+    value: higgs_reduced
+  preprocessor.poly_features_degree:
+    value: 1
+  trainer.max_epochs:
+    value: 200
+  model.model_type:
+    value: BMLP
+  model.hidden_layers:
+    value: [150, 1000, 150, 30]
+  model.dropout:
+    values:
+      - 0.418279984598333
+      - 0.4752936902677664
+  loss.type:
+    value: normal

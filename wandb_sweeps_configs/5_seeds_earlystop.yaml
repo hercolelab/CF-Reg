@@ -6,21 +6,11 @@ metric:
 parameters:
   seed:
     values:
-      - 37
-      - 38
-      - 39
-      - 40
-      - 41
       - 42
       - 43
       - 44
       - 45
       - 46
-      - 47
-      - 48
-      - 49
-      - 50
-      - 51
   loss:
     values:
 #      - {type: scfe_regularization, alpha: -0.07636928146169841}

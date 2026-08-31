@@ -1,0 +1,26 @@
+method: grid
+name: best_higgs_reduced_mlps_l2_configurations
+metric:
+  goal: maximize
+  name: test/accuracy
+parameters:
+  tuning:
+    value: false
+  data.name:
+    value: higgs_reduced
+  preprocessor.poly_features_degree:
+    value: 1
+  trainer.max_epochs:
+    value: 200
+  model.model_type:
+    value: BMLP
+  model.hidden_layers:
+    value: [100, 30]
+  model.dropout:
+    value: 0.0
+  loss.type:
+    value: l2normal
+  loss.alpha:
+    values:
+      - 0.00014191033206368094
+      - 0.0002051036769342058

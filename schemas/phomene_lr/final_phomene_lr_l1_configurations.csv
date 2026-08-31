@@ -1,0 +1,2 @@
+sweep_id,dataset,preprocessor_poly_features_degree,model,loss,id,validation_accuracy,parameter_1_name,parameter_1_value,test_accuracy
+j5wp6di8,phomene,11,logisticregression,l1normal,1,0.8353376388549805,loss_alpha,0.004556178879936412,0.8094357252120972

@@ -1,0 +1,31 @@
+method: grid
+name: final_phomene_lr_scfe_configuration_4
+metric:
+  goal: maximize
+  name: test/accuracy
+parameters:
+  seed:
+    values:
+    - 42
+    - 43
+    - 44
+    - 45
+    - 46
+  tuning:
+    value: false
+  data.name:
+    value: phomene
+  preprocessor.poly_features_degree:
+    value: 11
+  trainer.max_epochs:
+    value: 2000
+  model.model_type:
+    value: LogisticRegression
+  loss.type:
+    value: scfe_regularization
+  loss.alpha:
+    value: -0.5995294462139076
+  estimator.type:
+    value: scfe
+  estimator.reg_coef.value:
+    value: 1.063665533342538

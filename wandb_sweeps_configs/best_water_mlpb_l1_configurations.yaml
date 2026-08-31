@@ -1,0 +1,26 @@
+method: grid
+name: best_water_mlpb_l1_configurations
+metric:
+  goal: maximize
+  name: test/accuracy
+parameters:
+  tuning:
+    value: false
+  data.name:
+    value: water
+  preprocessor.poly_features_degree:
+    value: 1
+  trainer.max_epochs:
+    value: 2000
+  model.model_type:
+    value: BMLP
+  model.hidden_layers:
+    value: [150, 1000, 150, 30]
+  model.dropout:
+    value: 0.0
+  loss.type:
+    value: l1normal
+  loss.alpha:
+    values:
+      - 0.7213694494851657
+      - 0.9762154309817168

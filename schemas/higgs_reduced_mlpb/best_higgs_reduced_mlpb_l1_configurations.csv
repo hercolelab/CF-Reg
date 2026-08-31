@@ -1,0 +1,3 @@
+sweep_id,dataset,model,model_hidden_layers,loss,id,validation_accuracy,parameter_1_name,parameter_1_value
+lo6cvrn5,higgs_reduced,bmlp,"[150, 1000, 150, 30]",l1normal,1,0.47064998745918274,loss_alpha,0.3372912024102452
+lo6cvrn5,higgs_reduced,bmlp,"[150, 1000, 150, 30]",l1normal,2,0.47064998745918274,loss_alpha,0.08903817642948549

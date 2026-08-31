@@ -1,0 +1,33 @@
+method: grid
+name: final_phomene_mlpb_dropout_configuration
+metric:
+  goal: maximize
+  name: test/accuracy
+parameters:
+  seed:
+    values:
+    - 42
+    - 43
+    - 44
+    - 45
+    - 46
+  tuning:
+    value: false
+  data.name:
+    value: phomene
+  preprocessor.poly_features_degree:
+    value: 1
+  trainer.max_epochs:
+    value: 2000
+  model.model_type:
+    value: BMLP
+  model.hidden_layers:
+    value:
+    - 150
+    - 1000
+    - 150
+    - 30
+  model.dropout:
+    value: 0.41194364410361234
+  loss.type:
+    value: normal
